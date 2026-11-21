@@ -1,6 +1,7 @@
 # Search a whole project with grep -r, without node_modules, .git or binary junk
 
-> 🎬 Video: premieres Nov 22, 2026 on [youtube.com/@ShellProven](https://www.youtube.com/@ShellProven) (direct link added on release).
+> 🎬 Video: premieres on [youtube.com/@ShellProven](https://www.youtube.com/@ShellProven) (direct link added on release).
+> 📝 Lesson page with a short quiz: https://shellprovenai.github.io/lekcje/grep-r-excludes/
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 
@@ -91,6 +92,42 @@ $ grep -rnIE "TODO|FIXME|DEBUG" --exclude-dir={node_modules,.git,dist} .
 $ grep -n -A 1 "TODO" src/auth.py
 2:    # TODO: rate limit
 3-    return check(user)
+```
+
+## Quick check
+
+**Question 1.** I search for version 1.5 and grep also matches 105. Which option fixes that?
+
+**Answer:** grep -F "1.5" — -F treats the pattern as plain text. Without it, the dot matches any character.
+
+**Question 2.** I search for the word log and also get login and catalog. Which option keeps only whole words?
+
+**Answer:** grep -w "log" — -w accepts a match only when it is a word of its own.
+
+Commands that check the answers (run in the same container, after the lesson):
+
+```console
+$ grep -rn "1.5" src logs
+src/main.py:4:VERSION = "1.5"
+logs/app.log:3:version 105 started
+```
+
+```console
+$ grep -rnF "1.5" src logs
+src/main.py:4:VERSION = "1.5"
+```
+
+```console
+$ grep -rn "log" logs src
+logs/app.log:1:2026 login ok
+logs/app.log:2:2026 user log out
+src/client.js:2:fetch("/api/catalog")
+src/auth.py:1:def login(user):
+```
+
+```console
+$ grep -rnw "log" logs src
+logs/app.log:2:2026 user log out
 ```
 
 ## Files

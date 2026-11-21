@@ -1,5 +1,5 @@
 # polecenia.log — Search a whole project with grep -r, without node_modules, .git or binary junk
-# obraz: docker.io/library/debian:13 (sha256:bfc36aecdece0387418759dba474aa856c026ca8087da3606b41b90ab0509c99), Debian 13.7, uruchomiono 2026-11-21T15:36:13Z
+# obraz: docker.io/library/debian:13 (sha256:bfc36aecdece0387418759dba474aa856c026ca8087da3606b41b90ab0509c99), Debian 13.7, uruchomiono 2026-11-21T18:58:53Z
 # wersje: grep (GNU grep) 3.11
 # pakiety doinstalowane z repozytorium Debiana: (brak)
 # katalog roboczy: /lab/app; każdy rozdział = osobna powłoka (bash --norc), jak w nagraniu
@@ -42,7 +42,7 @@ $ grep -r "TODO" .
 grep: ./bin/tool: binary file matches
 [exit 0 — OK]
 
-# czas rozdziału: 2.1 s
+# czas rozdziału: 1.9 s
 
 ## [03] Skip folders with --exclude-dir
 $ grep -rn "TODO" --exclude-dir=node_modules --exclude-dir=.git .
@@ -52,7 +52,7 @@ $ grep -rn "TODO" --exclude-dir=node_modules --exclude-dir=.git .
 grep: ./bin/tool: binary file matches
 [exit 0 — OK]
 
-# czas rozdziału: 2.4 s
+# czas rozdziału: 1.5 s
 
 ## [04] Ignore binary files with -I
 $ grep -rnI "TODO" --exclude-dir={node_modules,.git,dist} .
@@ -60,7 +60,7 @@ $ grep -rnI "TODO" --exclude-dir={node_modules,.git,dist} .
 ./src/auth.py:2:    # TODO: rate limit
 [exit 0 — OK]
 
-# czas rozdziału: 2.2 s
+# czas rozdziału: 1.7 s
 
 ## [05] Case, file types and file names
 $ grep -rniI "todo" --exclude-dir={node_modules,.git,dist} .
@@ -73,7 +73,7 @@ $ grep -rl "TODO" --include="*.py" .
 ./src/auth.py
 [exit 0 — OK]
 
-# czas rozdziału: 2.8 s
+# czas rozdziału: 1.6 s
 
 ## [06] Whole words with -w
 $ grep -rn "log" logs src
@@ -87,7 +87,7 @@ $ grep -rnw "log" logs src
 logs/app.log:2:2026 user log out
 [exit 0 — OK]
 
-# czas rozdziału: 2.5 s
+# czas rozdziału: 1.6 s
 
 ## [07] Dots are wildcards: use -F
 $ grep -rn "1.5" src logs
@@ -99,7 +99,7 @@ $ grep -rnF "1.5" src logs
 src/main.py:4:VERSION = "1.5"
 [exit 0 — OK]
 
-# czas rozdziału: 2.8 s
+# czas rozdziału: 1.9 s
 
 ## [08] Several patterns and some context
 $ grep -rnIE "TODO|FIXME|DEBUG" --exclude-dir={node_modules,.git,dist} .
@@ -113,6 +113,29 @@ $ grep -n -A 1 "TODO" src/auth.py
 3-    return check(user)
 [exit 0 — OK]
 
-# czas rozdziału: 2.4 s
+# czas rozdziału: 1.6 s
 
-# PODSUMOWANIE: 20 poleceń, błędów: 0
+## [09] Quick check
+$ grep -rn "1.5" src logs
+src/main.py:4:VERSION = "1.5"
+logs/app.log:3:version 105 started
+[exit 0 — OK]
+
+$ grep -rnF "1.5" src logs
+src/main.py:4:VERSION = "1.5"
+[exit 0 — OK]
+
+$ grep -rn "log" logs src
+logs/app.log:1:2026 login ok
+logs/app.log:2:2026 user log out
+src/client.js:2:fetch("/api/catalog")
+src/auth.py:1:def login(user):
+[exit 0 — OK]
+
+$ grep -rnw "log" logs src
+logs/app.log:2:2026 user log out
+[exit 0 — OK]
+
+# czas rozdziału: 2.2 s
+
+# PODSUMOWANIE: 24 poleceń, błędów: 0
