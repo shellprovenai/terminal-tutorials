@@ -1,6 +1,6 @@
 # Find files changed in the last 24 hours (and the -mtime +1 trap)
 
-> 🎬 Video: premieres Nov 22, 2026 on [youtube.com/@ShellProven](https://www.youtube.com/@ShellProven) (direct link added on release).
+> 🎬 Video: premieres on [youtube.com/@ShellProven](https://www.youtube.com/@ShellProven) (direct link added on release).
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 
@@ -10,14 +10,14 @@ Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh`
 
 ```console
 $ find . -type f -printf '%TY-%Tm-%Td %TH:%TM  %p\n' | sort
-2026-11-16 15:35  ./LICENSE
-2026-11-19 13:35  ./src/old_notes.txt
-2026-11-19 16:35  ./README.md
-2026-11-20 09:35  ./src/utils.py
-2026-11-20 19:35  ./src/config.yaml
-2026-11-21 12:35  ./logs/app.log
-2026-11-21 14:35  ./node_modules/pkg/index.js
-2026-11-21 15:25  ./src/app.py
+2026-11-16 18:19  ./LICENSE
+2026-11-19 16:19  ./src/old_notes.txt
+2026-11-19 19:19  ./README.md
+2026-11-20 12:19  ./src/utils.py
+2026-11-20 22:19  ./src/config.yaml
+2026-11-21 15:19  ./logs/app.log
+2026-11-21 17:19  ./node_modules/pkg/index.js
+2026-11-21 18:09  ./src/app.py
 ```
 
 ## Modified in the last 24 hours: -mtime -1
@@ -93,9 +93,9 @@ $ find . -path ./node_modules -prune -o -type f -mmin -1440 -print
 
 ```console
 $ find . -path ./node_modules -prune -o -type f -mmin -1440 -printf '%TY-%Tm-%Td %TH:%TM  %p\n' | sort
-2026-11-20 19:35  ./src/config.yaml
-2026-11-21 12:35  ./logs/app.log
-2026-11-21 15:25  ./src/app.py
+2026-11-20 22:19  ./src/config.yaml
+2026-11-21 15:19  ./logs/app.log
+2026-11-21 18:09  ./src/app.py
 ```
 
 ## Back up today's changes safely
@@ -107,16 +107,56 @@ $ find . -path ./node_modules -prune -o -type f -mmin -1440 -print0 | tar --null
 
 ```console
 $ tar -tzvf /tmp/recent.tgz
--rw-r--r-- root/root         5 2026-11-21 15:25 ./src/app.py
--rw-r--r-- root/root         5 2026-11-20 19:35 ./src/config.yaml
--rw-r--r-- root/root         5 2026-11-21 12:35 ./logs/app.log
+-rw-r--r-- root/root         5 2026-11-21 18:09 ./src/app.py
+-rw-r--r-- root/root         5 2026-11-20 22:19 ./src/config.yaml
+-rw-r--r-- root/root         5 2026-11-21 15:19 ./logs/app.log
 ```
 
 ```console
 $ find . -path ./node_modules -prune -o -type f -mmin -1440 -exec ls -l {} +
--rw-r--r-- 1 root root 5 Nov 21 12:35 ./logs/app.log
--rw-r--r-- 1 root root 5 Nov 21 15:25 ./src/app.py
--rw-r--r-- 1 root root 5 Nov 20 19:35 ./src/config.yaml
+-rw-r--r-- 1 root root 5 Nov 21 15:19 ./logs/app.log
+-rw-r--r-- 1 root root 5 Nov 21 18:09 ./src/app.py
+-rw-r--r-- 1 root root 5 Nov 20 22:19 ./src/config.yaml
+```
+
+## Quick check
+
+**Question 1.** I want every file changed in the last 24 hours. Do I use -mtime 1 or -mtime -1?
+
+**Answer:** find . -type f -mtime -1 — -mtime -1 means less than one day old. Plain one means one to two days old.
+
+**Question 2.** README.md is 47 hours old. Will find . -type f -mtime +1 list it?
+
+**Answer:** No. Use -mmin +1440 instead — No. Forty-seven hours rounds down to one day, and one is not greater than one.
+
+Commands that check the answers (run in the same container, after the lesson):
+
+```console
+$ find . -type f -mtime -1
+./src/app.py
+./src/config.yaml
+./node_modules/pkg/index.js
+./logs/app.log
+```
+
+```console
+$ find . -type f -mtime 1
+./src/utils.py
+./README.md
+```
+
+```console
+$ find . -type f -mtime +1
+./src/old_notes.txt
+./LICENSE
+```
+
+```console
+$ find . -type f -mmin +1440
+./src/utils.py
+./src/old_notes.txt
+./LICENSE
+./README.md
 ```
 
 ## Files

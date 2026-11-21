@@ -1,5 +1,5 @@
 # polecenia.log — Find files changed in the last 24 hours (and the -mtime +1 trap)
-# obraz: docker.io/library/debian:13 (sha256:bfc36aecdece0387418759dba474aa856c026ca8087da3606b41b90ab0509c99), Debian 13.7, uruchomiono 2026-11-21T15:35:04Z
+# obraz: docker.io/library/debian:13 (sha256:bfc36aecdece0387418759dba474aa856c026ca8087da3606b41b90ab0509c99), Debian 13.7, uruchomiono 2026-11-21T18:19:45Z
 # wersje: find (GNU findutils) 4.10.0 | tar (GNU tar) 1.35
 # pakiety doinstalowane z repozytorium Debiana: (brak)
 # katalog roboczy: /lab/project; każdy rozdział = osobna powłoka (bash --norc), jak w nagraniu
@@ -22,17 +22,17 @@
 [exit 0 — OK]
 
 $ find . -type f -printf '%TY-%Tm-%Td %TH:%TM  %p\n' | sort
-2026-11-16 15:35  ./LICENSE
-2026-11-19 13:35  ./src/old_notes.txt
-2026-11-19 16:35  ./README.md
-2026-11-20 09:35  ./src/utils.py
-2026-11-20 19:35  ./src/config.yaml
-2026-11-21 12:35  ./logs/app.log
-2026-11-21 14:35  ./node_modules/pkg/index.js
-2026-11-21 15:25  ./src/app.py
+2026-11-16 18:19  ./LICENSE
+2026-11-19 16:19  ./src/old_notes.txt
+2026-11-19 19:19  ./README.md
+2026-11-20 12:19  ./src/utils.py
+2026-11-20 22:19  ./src/config.yaml
+2026-11-21 15:19  ./logs/app.log
+2026-11-21 17:19  ./node_modules/pkg/index.js
+2026-11-21 18:09  ./src/app.py
 [exit 0 — OK]
 
-# czas rozdziału: 3.4 s
+# czas rozdziału: 1.9 s
 
 ## [03] Modified in the last 24 hours: -mtime -1
 $ find . -type f -mtime -1
@@ -42,7 +42,7 @@ $ find . -type f -mtime -1
 ./logs/app.log
 [exit 0 — OK]
 
-# czas rozdziału: 2.8 s
+# czas rozdziału: 1.6 s
 
 ## [04] The trap: -mtime 1 and -mtime +1
 $ find . -type f -mtime 1
@@ -55,7 +55,7 @@ $ find . -type f -mtime +1
 ./LICENSE
 [exit 0 — OK]
 
-# czas rozdziału: 2.3 s
+# czas rozdziału: 1.5 s
 
 ## [05] Exact times with -mmin
 $ find . -type f -mmin -120
@@ -63,7 +63,7 @@ $ find . -type f -mmin -120
 ./node_modules/pkg/index.js
 [exit 0 — OK]
 
-# czas rozdziału: 2.3 s
+# czas rozdziału: 1.7 s
 
 ## [06] Human-readable dates with -newermt
 $ find . -type f -newermt '6 hours ago'
@@ -81,7 +81,7 @@ $ find . -type f -newermt '2 days ago' ! -newermt '1 day ago'
 ./README.md
 [exit 0 — OK]
 
-# czas rozdziału: 2.7 s
+# czas rozdziału: 1.9 s
 
 ## [07] Skipping folders with -prune
 $ find . -path ./node_modules -prune -o -type f -mmin -1440
@@ -97,13 +97,13 @@ $ find . -path ./node_modules -prune -o -type f -mmin -1440 -print
 ./logs/app.log
 [exit 0 — OK]
 
-# czas rozdziału: 1.5 s
+# czas rozdziału: 1.8 s
 
 ## [08] Show when each file changed
 $ find . -path ./node_modules -prune -o -type f -mmin -1440 -printf '%TY-%Tm-%Td %TH:%TM  %p\n' | sort
-2026-11-20 19:35  ./src/config.yaml
-2026-11-21 12:35  ./logs/app.log
-2026-11-21 15:25  ./src/app.py
+2026-11-20 22:19  ./src/config.yaml
+2026-11-21 15:19  ./logs/app.log
+2026-11-21 18:09  ./src/app.py
 [exit 0 — OK]
 
 # czas rozdziału: 1.6 s
@@ -113,17 +113,44 @@ $ find . -path ./node_modules -prune -o -type f -mmin -1440 -print0 | tar --null
 [exit 0 — OK]
 
 $ tar -tzvf /tmp/recent.tgz
--rw-r--r-- root/root         5 2026-11-21 15:25 ./src/app.py
--rw-r--r-- root/root         5 2026-11-20 19:35 ./src/config.yaml
--rw-r--r-- root/root         5 2026-11-21 12:35 ./logs/app.log
+-rw-r--r-- root/root         5 2026-11-21 18:09 ./src/app.py
+-rw-r--r-- root/root         5 2026-11-20 22:19 ./src/config.yaml
+-rw-r--r-- root/root         5 2026-11-21 15:19 ./logs/app.log
 [exit 0 — OK]
 
 $ find . -path ./node_modules -prune -o -type f -mmin -1440 -exec ls -l {} +
--rw-r--r-- 1 root root 5 Nov 21 12:35 ./logs/app.log
--rw-r--r-- 1 root root 5 Nov 21 15:25 ./src/app.py
--rw-r--r-- 1 root root 5 Nov 20 19:35 ./src/config.yaml
+-rw-r--r-- 1 root root 5 Nov 21 15:19 ./logs/app.log
+-rw-r--r-- 1 root root 5 Nov 21 18:09 ./src/app.py
+-rw-r--r-- 1 root root 5 Nov 20 22:19 ./src/config.yaml
 [exit 0 — OK]
 
-# czas rozdziału: 1.9 s
+# czas rozdziału: 1.7 s
 
-# PODSUMOWANIE: 19 poleceń, błędów: 0
+## [10] Quick check
+$ find . -type f -mtime -1
+./src/app.py
+./src/config.yaml
+./node_modules/pkg/index.js
+./logs/app.log
+[exit 0 — OK]
+
+$ find . -type f -mtime 1
+./src/utils.py
+./README.md
+[exit 0 — OK]
+
+$ find . -type f -mtime +1
+./src/old_notes.txt
+./LICENSE
+[exit 0 — OK]
+
+$ find . -type f -mmin +1440
+./src/utils.py
+./src/old_notes.txt
+./LICENSE
+./README.md
+[exit 0 — OK]
+
+# czas rozdziału: 2.0 s
+
+# PODSUMOWANIE: 23 poleceń, błędów: 0
