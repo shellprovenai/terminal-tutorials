@@ -1,6 +1,6 @@
 # Bash redirection explained: >, >>, 2>, 2>&1 and | (and why the order matters)
 
-> 🎬 Video: premieres on [youtube.com/@ShellProven](https://www.youtube.com/@ShellProven) (direct link added on release).
+> 🎬 Video: https://youtu.be/2bKrAD4Gl4E (public from Nov 24, 2026)
 > 📝 Lesson page with a short quiz: https://shellprovenai.github.io/lekcje/bash-redirection/
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
