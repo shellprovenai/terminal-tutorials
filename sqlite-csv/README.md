@@ -1,8 +1,8 @@
 # SQLite in the terminal: query a CSV file in 5 minutes (and the text-number trap)
 
-> 🎬 Video: premieres Nov 24, 2026 on [youtube.com/@ShellProven](https://www.youtube.com/@ShellProven) (direct link added on release).
+> 🎬 Video: premieres on [youtube.com/@ShellProven](https://www.youtube.com/@ShellProven) (direct link added on release).
 
-Commands from the video, tested in `localhost/shellproven-sqlite-csv:13`. Run `setup.sh` first to recreate the demo folder.
+Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 
 > Script and narration made with the help of AI. Every command below was executed; outputs are real.
 
@@ -113,6 +113,28 @@ product,avg_price
 keyboard,49.8
 monitor,189.0
 mouse,10.08
+```
+
+## Quick check
+
+**Question 1.** After a plain .import, ORDER BY amount puts a 9.50 mouse above a 189 monitor. Why?
+
+**Answer:** amount was imported as TEXT — Text is sorted like words, character by character. Create a typed table, or cast the column to a number.
+
+**Question 2.** My table already has column names. Which option stops .import from loading the header as a row?
+
+**Answer:** .import --csv --skip 1 — --skip 1 drops the first line, so you get nine sales and no header row.
+
+Commands that check the answers (run in the same container, after the lesson):
+
+```console
+$ sqlite3 /tmp/quiz.db ".import --csv sales.csv s" && sqlite3 /tmp/quiz.db "SELECT DISTINCT typeof(amount) FROM s"
+text
+```
+
+```console
+$ sqlite3 shop.db "SELECT COUNT(*) FROM sales"
+9
 ```
 
 ## Files

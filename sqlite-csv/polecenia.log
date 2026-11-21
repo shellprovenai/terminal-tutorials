@@ -1,5 +1,5 @@
 # polecenia.log — SQLite in the terminal: query a CSV file in 5 minutes (and the text-number trap)
-# obraz: localhost/shellproven-sqlite-csv:13 (sha256:886bddb3339ad946433fd7a607ba70c333372168bc798d76e43ada0ce96ab60c), Debian 13.7, uruchomiono 2026-11-21T15:38:26Z
+# obraz: localhost/shellproven-sqlite-csv:13 (sha256:886bddb3339ad946433fd7a607ba70c333372168bc798d76e43ada0ce96ab60c), Debian 13.7, uruchomiono 2026-11-21T19:23:33Z
 # wersje: 3.46.1 2024-08-13
 # pakiety doinstalowane z repozytorium Debiana: sqlite3
 # katalog roboczy: /lab/data; każdy rozdział = osobna powłoka (bash --norc), jak w nagraniu
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS "sales"(
 "date" TEXT, "region" TEXT, "product" TEXT, "amount" TEXT);
 [exit 0 — OK]
 
-# czas rozdziału: 2.4 s
+# czas rozdziału: 2.8 s
 
 ## [04] The trap: numbers stored as text
 $ sqlite3 shop.db "SELECT product, amount FROM sales ORDER BY amount DESC LIMIT 3"
@@ -48,7 +48,7 @@ monitor|189.00
 monitor|179.00
 [exit 0 — OK]
 
-# czas rozdziału: 1.6 s
+# czas rozdziału: 1.9 s
 
 ## [05] The real fix: a typed table
 $ rm shop.db && sqlite3 shop.db "CREATE TABLE sales(date TEXT, region TEXT, product TEXT, amount REAL)"
@@ -61,7 +61,7 @@ $ sqlite3 shop.db "SELECT typeof(amount), COUNT(*) FROM sales GROUP BY 1"
 real|9
 [exit 0 — OK]
 
-# czas rozdziału: 1.7 s
+# czas rozdziału: 1.8 s
 
 ## [06] Answering questions with GROUP BY
 $ sqlite3 -header -column shop.db "SELECT region, COUNT(*) AS orders, ROUND(SUM(amount), 2) AS total FROM sales GROUP BY region ORDER BY total DESC"
@@ -72,7 +72,7 @@ south   3       249.75
 west    3       238.5 
 [exit 0 — OK]
 
-# czas rozdziału: 2.6 s
+# czas rozdziału: 1.5 s
 
 ## [07] Dates and months
 $ sqlite3 -header -column shop.db "SELECT date, product, amount FROM sales WHERE date >= '2026-03-01' ORDER BY date"
@@ -92,7 +92,7 @@ month    total
 2026-03  267.25
 [exit 0 — OK]
 
-# czas rozdziału: 1.5 s
+# czas rozdziału: 1.4 s
 
 ## [08] Export the result back to CSV
 $ sqlite3 -header -csv shop.db "SELECT product, ROUND(AVG(amount), 2) AS avg_price FROM sales GROUP BY product" > report.csv
@@ -105,6 +105,17 @@ monitor,189.0
 mouse,10.08
 [exit 0 — OK]
 
+# czas rozdziału: 1.5 s
+
+## [09] Quick check
+$ sqlite3 /tmp/quiz.db ".import --csv sales.csv s" && sqlite3 /tmp/quiz.db "SELECT DISTINCT typeof(amount) FROM s"
+text
+[exit 0 — OK]
+
+$ sqlite3 shop.db "SELECT COUNT(*) FROM sales"
+9
+[exit 0 — OK]
+
 # czas rozdziału: 2.5 s
 
-# PODSUMOWANIE: 14 poleceń, błędów: 0
+# PODSUMOWANIE: 16 poleceń, błędów: 0
