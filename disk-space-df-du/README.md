@@ -1,6 +1,7 @@
 # Disk full? Find what's eating your space with df, du and sort (Linux)
 
-> 🎬 Video: premieres on [youtube.com/@ShellProven](https://www.youtube.com/@ShellProven) (direct link added on release).
+> 🎬 Video: https://youtu.be/ZjuJPfSrLok (public from Nov 25, 2026)
+> 📝 Lesson page with a short quiz: https://shellprovenai.github.io/lekcje/disk-space-df-du/
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 
