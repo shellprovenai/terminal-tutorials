@@ -1,0 +1,110 @@
+# polecenia.log — SQLite in the terminal: query a CSV file in 5 minutes (and the text-number trap)
+# obraz: localhost/shellproven-sqlite-csv:13 (sha256:886bddb3339ad946433fd7a607ba70c333372168bc798d76e43ada0ce96ab60c), Debian 13.7, uruchomiono 2026-11-21T15:38:26Z
+# wersje: 3.46.1 2024-08-13
+# pakiety doinstalowane z repozytorium Debiana: sqlite3
+# katalog roboczy: /lab/data; każdy rozdział = osobna powłoka (bash --norc), jak w nagraniu
+# '%' = przygotowanie (w filmie ukryte), '$' = polecenie pokazane w filmie
+
+## [02] The CSV file
+% printf 'date,region,product,amount\n2026-01-14,north,keyboard,49.90\n2026-01-20,south,monitor,189.00\n2026-02-03,north,mouse,9.50\n2026-02-11,west,monitor,179.00\n2026-02-27,south,keyboard,52.00\n2026-03-05,west,mouse,12.00\n2026-03-09,north,monitor,199.00\n2026-03-18,south,mouse,8.75\n2026-03-30,west,keyboard,47.50\n' > sales.csv
+[exit 0 — OK]
+
+$ cat sales.csv
+date,region,product,amount
+2026-01-14,north,keyboard,49.90
+2026-01-20,south,monitor,189.00
+2026-02-03,north,mouse,9.50
+2026-02-11,west,monitor,179.00
+2026-02-27,south,keyboard,52.00
+2026-03-05,west,mouse,12.00
+2026-03-09,north,monitor,199.00
+2026-03-18,south,mouse,8.75
+2026-03-30,west,keyboard,47.50
+[exit 0 — OK]
+
+# czas rozdziału: 1.9 s
+
+## [03] Import with one command
+$ sqlite3 shop.db ".import --csv sales.csv sales"
+[exit 0 — OK]
+
+$ sqlite3 shop.db ".schema sales"
+CREATE TABLE IF NOT EXISTS "sales"(
+"date" TEXT, "region" TEXT, "product" TEXT, "amount" TEXT);
+[exit 0 — OK]
+
+# czas rozdziału: 2.4 s
+
+## [04] The trap: numbers stored as text
+$ sqlite3 shop.db "SELECT product, amount FROM sales ORDER BY amount DESC LIMIT 3"
+mouse|9.50
+mouse|8.75
+keyboard|52.00
+[exit 0 — OK]
+
+$ sqlite3 shop.db "SELECT product, amount FROM sales ORDER BY CAST(amount AS REAL) DESC LIMIT 3"
+monitor|199.00
+monitor|189.00
+monitor|179.00
+[exit 0 — OK]
+
+# czas rozdziału: 1.6 s
+
+## [05] The real fix: a typed table
+$ rm shop.db && sqlite3 shop.db "CREATE TABLE sales(date TEXT, region TEXT, product TEXT, amount REAL)"
+[exit 0 — OK]
+
+$ sqlite3 shop.db ".import --csv --skip 1 sales.csv sales"
+[exit 0 — OK]
+
+$ sqlite3 shop.db "SELECT typeof(amount), COUNT(*) FROM sales GROUP BY 1"
+real|9
+[exit 0 — OK]
+
+# czas rozdziału: 1.7 s
+
+## [06] Answering questions with GROUP BY
+$ sqlite3 -header -column shop.db "SELECT region, COUNT(*) AS orders, ROUND(SUM(amount), 2) AS total FROM sales GROUP BY region ORDER BY total DESC"
+region  orders  total 
+------  ------  ------
+north   3       258.4 
+south   3       249.75
+west    3       238.5 
+[exit 0 — OK]
+
+# czas rozdziału: 2.6 s
+
+## [07] Dates and months
+$ sqlite3 -header -column shop.db "SELECT date, product, amount FROM sales WHERE date >= '2026-03-01' ORDER BY date"
+date        product   amount
+----------  --------  ------
+2026-03-05  mouse     12.0  
+2026-03-09  monitor   199.0 
+2026-03-18  mouse     8.75  
+2026-03-30  keyboard  47.5  
+[exit 0 — OK]
+
+$ sqlite3 -header -column shop.db "SELECT substr(date, 1, 7) AS month, ROUND(SUM(amount), 2) AS total FROM sales GROUP BY month"
+month    total 
+-------  ------
+2026-01  238.9 
+2026-02  240.5 
+2026-03  267.25
+[exit 0 — OK]
+
+# czas rozdziału: 1.5 s
+
+## [08] Export the result back to CSV
+$ sqlite3 -header -csv shop.db "SELECT product, ROUND(AVG(amount), 2) AS avg_price FROM sales GROUP BY product" > report.csv
+[exit 0 — OK]
+
+$ cat report.csv
+product,avg_price
+keyboard,49.8
+monitor,189.0
+mouse,10.08
+[exit 0 — OK]
+
+# czas rozdziału: 2.5 s
+
+# PODSUMOWANIE: 14 poleceń, błędów: 0

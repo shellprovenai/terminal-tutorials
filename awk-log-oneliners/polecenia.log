@@ -1,0 +1,104 @@
+# polecenia.log — awk for people who hate awk: 8 one-liners that answer real questions about a log
+# obraz: docker.io/library/debian:13 (sha256:bfc36aecdece0387418759dba474aa856c026ca8087da3606b41b90ab0509c99), Debian 13.7, uruchomiono 2026-11-21T15:43:33Z
+# wersje: mawk 1.3.4 20250131
+# pakiety doinstalowane z repozytorium Debiana: (brak)
+# katalog roboczy: /lab/logs; każdy rozdział = osobna powłoka (bash --norc), jak w nagraniu
+# '%' = przygotowanie (w filmie ukryte), '$' = polecenie pokazane w filmie
+
+## [02] The log and the one idea
+% printf '10.0.0.5 GET /index.html 200 5120 12\n10.0.0.7 GET /login 200 2048 30\n10.0.0.5 POST /login 302 512 45\n10.0.0.9 GET /admin 404 256 3\n10.0.0.7 GET /api/orders 500 128 950\n10.0.0.5 GET /missing.png 404 256 2\n10.0.0.9 GET /api/orders 200 8192 120\n10.0.0.7 GET /index.html 200 5120 10\n' > access.log
+[exit 0 — OK]
+
+$ cat access.log
+10.0.0.5 GET /index.html 200 5120 12
+10.0.0.7 GET /login 200 2048 30
+10.0.0.5 POST /login 302 512 45
+10.0.0.9 GET /admin 404 256 3
+10.0.0.7 GET /api/orders 500 128 950
+10.0.0.5 GET /missing.png 404 256 2
+10.0.0.9 GET /api/orders 200 8192 120
+10.0.0.7 GET /index.html 200 5120 10
+[exit 0 — OK]
+
+# czas rozdziału: 2.7 s
+
+## [03] 1. Pick columns
+$ awk '{print $1, $4}' access.log
+10.0.0.5 200
+10.0.0.7 200
+10.0.0.5 302
+10.0.0.9 404
+10.0.0.7 500
+10.0.0.5 404
+10.0.0.9 200
+10.0.0.7 200
+[exit 0 — OK]
+
+# czas rozdziału: 1.7 s
+
+## [04] 2. Filter lines with a condition
+$ awk '$4 >= 400' access.log
+10.0.0.9 GET /admin 404 256 3
+10.0.0.7 GET /api/orders 500 128 950
+10.0.0.5 GET /missing.png 404 256 2
+[exit 0 — OK]
+
+$ awk '$4 == 404 {print $3}' access.log
+/admin
+/missing.png
+[exit 0 — OK]
+
+# czas rozdziału: 1.7 s
+
+## [05] 3. Sum and average
+$ awk '{sum += $5} END {print sum, "bytes"}' access.log
+21632 bytes
+[exit 0 — OK]
+
+$ awk '{t += $6; n++} END {printf "avg %.1f ms over %d requests\n", t/n, n}' access.log
+avg 146.5 ms over 8 requests
+[exit 0 — OK]
+
+# czas rozdziału: 1.9 s
+
+## [06] 4. Count per value
+$ awk '{c[$1]++} END {for (ip in c) print c[ip], ip}' access.log | sort -rn
+3 10.0.0.7
+3 10.0.0.5
+2 10.0.0.9
+[exit 0 — OK]
+
+# czas rozdziału: 1.5 s
+
+## [07] 5. Other separators and the last field
+% printf 'id,name,city\n1,Ana,Lisbon\n2,Tom,Leeds\n3,Mia,Graz\n' > users.csv
+[exit 0 — OK]
+
+$ awk -F, 'NR > 1 {print $2 " lives in " $3}' users.csv
+Ana lives in Lisbon
+Tom lives in Leeds
+Mia lives in Graz
+[exit 0 — OK]
+
+$ awk '$NF > 100 {print $NF " ms", $3}' access.log
+950 ms /api/orders
+120 ms /api/orders
+[exit 0 — OK]
+
+# czas rozdziału: 2.0 s
+
+## [08] The double-quote trap
+$ awk "{print $1}" access.log
+10.0.0.5 GET /index.html 200 5120 12
+10.0.0.7 GET /login 200 2048 30
+10.0.0.5 POST /login 302 512 45
+10.0.0.9 GET /admin 404 256 3
+10.0.0.7 GET /api/orders 500 128 950
+10.0.0.5 GET /missing.png 404 256 2
+10.0.0.9 GET /api/orders 200 8192 120
+10.0.0.7 GET /index.html 200 5120 10
+[exit 0 — OK]
+
+# czas rozdziału: 1.7 s
+
+# PODSUMOWANIE: 12 poleceń, błędów: 0

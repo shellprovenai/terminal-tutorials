@@ -1,0 +1,97 @@
+# polecenia.log — Linux file permissions: read ls -l, fix "Permission denied", and never chmod 777
+# obraz: docker.io/library/debian:13 (sha256:bfc36aecdece0387418759dba474aa856c026ca8087da3606b41b90ab0509c99), Debian 13.7, uruchomiono 2026-11-21T15:37:40Z
+# wersje: chmod (GNU coreutils) 9.7
+# pakiety doinstalowane z repozytorium Debiana: (brak)
+# katalog roboczy: /lab/site; każdy rozdział = osobna powłoka (bash --norc), jak w nagraniu
+# '%' = przygotowanie (w filmie ukryte), '$' = polecenie pokazane w filmie
+
+## [02] Reading ls -l
+% useradd -m alice && useradd -m bob && groupadd web && usermod -aG web alice
+[exit 0 — OK]
+
+% echo hello > index.html && printf '#!/bin/sh\necho deployed\n' > deploy.sh && echo DB_PASSWORD=demo > secret.env
+[exit 0 — OK]
+
+% mkdir private && echo x > private/notes.txt && chown -R alice:web /lab/site
+[exit 0 — OK]
+
+$ ls -l
+total 16
+-rw-r--r-- 1 alice web   24 Nov 21 15:37 deploy.sh
+-rw-r--r-- 1 alice web    6 Nov 21 15:37 index.html
+drwxr-xr-x 2 alice web 4096 Nov 21 15:37 private
+-rw-r--r-- 1 alice web   17 Nov 21 15:37 secret.env
+[exit 0 — OK]
+
+# czas rozdziału: 5.5 s
+
+## [03] From letters to numbers
+$ stat -c '%A %a %U:%G %n' *
+-rw-r--r-- 644 alice:web deploy.sh
+-rw-r--r-- 644 alice:web index.html
+drwxr-xr-x 755 alice:web private
+-rw-r--r-- 644 alice:web secret.env
+[exit 0 — OK]
+
+# czas rozdziału: 1.6 s
+
+## [04] Problem 1: the script won't run
+$ su alice -c ./deploy.sh
+sh: 1: ./deploy.sh: Permission denied
+[exit 126 — OK (oczekiwany ≠0)]
+
+$ chmod u+x deploy.sh && su alice -c ./deploy.sh
+deployed
+[exit 0 — OK]
+
+$ chmod go-w,g+x deploy.sh && stat -c '%A %a %n' deploy.sh
+-rwxr-xr-- 754 deploy.sh
+[exit 0 — OK]
+
+# czas rozdziału: 1.7 s
+
+## [05] Problem 2: a secret anyone can read
+$ su bob -c 'cat secret.env'
+DB_PASSWORD=demo
+[exit 0 — OK]
+
+$ chmod 600 secret.env && su bob -c 'cat secret.env'
+cat: secret.env: Permission denied
+[exit 1 — OK (oczekiwany ≠0)]
+
+# czas rozdziału: 1.6 s
+
+## [06] Problem 3: a private folder
+$ chmod 750 private && su bob -c 'ls private'
+ls: cannot open directory 'private': Permission denied
+[exit 2 — OK (oczekiwany ≠0)]
+
+$ ls -ld private
+drwxr-x--- 2 alice web 4096 Nov 21 15:37 private
+[exit 0 — OK]
+
+# czas rozdziału: 1.7 s
+
+## [07] Why chmod 777 is a bad fix
+$ chmod 777 index.html && su bob -c 'echo defaced > index.html' && cat index.html
+defaced
+[exit 0 — OK]
+
+$ find . -perm -o=w -type f
+./index.html
+[exit 0 — OK]
+
+$ chmod 644 index.html && su bob -c 'echo again > index.html'
+sh: 1: cannot create index.html: Permission denied
+[exit 2 — OK (oczekiwany ≠0)]
+
+# czas rozdziału: 1.9 s
+
+## [08] Changing the owner with chown
+$ chown bob:web index.html && ls -l index.html
+-rw-r--r-- 1 bob web 8 Nov 21 15:37 index.html
+[exit 0 — OK]
+
+# czas rozdziału: 1.7 s
+
+# PODSUMOWANIE: 16 poleceń, błędów: 0
