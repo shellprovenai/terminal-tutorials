@@ -1,6 +1,6 @@
 # Disk full? Find what's eating your space with df, du and sort (Linux)
 
-> 🎬 Video: premieres Nov 25, 2026 on [youtube.com/@ShellProven](https://www.youtube.com/@ShellProven) (direct link added on release).
+> 🎬 Video: premieres on [youtube.com/@ShellProven](https://www.youtube.com/@ShellProven) (direct link added on release).
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 
@@ -49,9 +49,9 @@ $ du -ah . | sort -rh | head -6
 
 ```console
 $ find . -type f -size +50M -exec ls -lh {} +
--rw-r--r-- 1 root root  60M Nov 21 15:39 ./app/logs/app.log.1
--rw-r--r-- 1 root root 100M Nov 21 15:39 ./backups/db-2026-10.sql.gz
--rw-r--r-- 1 root root 104M Nov 21 15:39 ./backups/db-2026-11.sql.gz
+-rw-r--r-- 1 root root  60M Nov 21 19:39 ./app/logs/app.log.1
+-rw-r--r-- 1 root root 100M Nov 21 19:39 ./backups/db-2026-10.sql.gz
+-rw-r--r-- 1 root root 104M Nov 21 19:39 ./backups/db-2026-11.sql.gz
 ```
 
 ## Step 5: free space safely
@@ -86,6 +86,37 @@ $ find /proc/*/fd -lname '*(deleted)' -printf '%p -> %l\n' 2>/dev/null
 ```console
 $ kill %1
 
+```
+
+## Quick check
+
+**Question 1.** After du -h, why sort -h and not plain sort?
+
+**Answer:** sort -h understands sizes like 9M and 100M — Plain sort compares text, so a hundred megabytes would land before nine megabytes.
+
+**Question 2.** I deleted a 200 MB file, but df still counts the space as used. What is the likely cause?
+
+**Answer:** A process still has the deleted file open — The space comes back only when that process closes the file, or is restarted.
+
+Commands that check the answers (run in the same container, after the lesson):
+
+```console
+$ printf '100M\n9M\n1G\n' | sort
+100M
+1G
+9M
+```
+
+```console
+$ printf '100M\n9M\n1G\n' | sort -h
+9M
+100M
+1G
+```
+
+```console
+$ fallocate -l 10M quiz.tmp && { sleep 30 < quiz.tmp & p=$!; rm quiz.tmp; ls -l /proc/$p/fd/0 | sed 's/.*-> //'; kill $p; }
+/lab/srv/quiz.tmp (deleted)
 ```
 
 ## Files

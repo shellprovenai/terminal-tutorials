@@ -1,5 +1,5 @@
 # polecenia.log — Disk full? Find what's eating your space with df, du and sort (Linux)
-# obraz: docker.io/library/debian:13 (sha256:bfc36aecdece0387418759dba474aa856c026ca8087da3606b41b90ab0509c99), Debian 13.7, uruchomiono 2026-11-21T15:39:49Z
+# obraz: docker.io/library/debian:13 (sha256:bfc36aecdece0387418759dba474aa856c026ca8087da3606b41b90ab0509c99), Debian 13.7, uruchomiono 2026-11-21T19:39:43Z
 # wersje: du (GNU coreutils) 9.7
 # pakiety doinstalowane z repozytorium Debiana: (brak)
 # katalog roboczy: /lab/srv; każdy rozdział = osobna powłoka (bash --norc), jak w nagraniu
@@ -20,7 +20,7 @@ Filesystem      Size  Used Avail Use% Mounted on
 overlay          59G   21G   36G  37% /
 [exit 0 — OK]
 
-# czas rozdziału: 1.9 s
+# czas rozdziału: 1.8 s
 
 ## [03] Step 2: which folder? du -sh
 $ du -sh *
@@ -29,7 +29,7 @@ $ du -sh *
 3.1M	uploads
 [exit 0 — OK]
 
-# czas rozdziału: 2.3 s
+# czas rozdziału: 1.6 s
 
 ## [04] Step 3: drill down with --max-depth and sort -h
 $ du -h --max-depth=2 . | sort -h
@@ -54,9 +54,9 @@ $ du -ah . | sort -rh | head -6
 
 ## [05] Step 4: list the big files with find
 $ find . -type f -size +50M -exec ls -lh {} +
--rw-r--r-- 1 root root  60M Nov 21 15:39 ./app/logs/app.log.1
--rw-r--r-- 1 root root 100M Nov 21 15:39 ./backups/db-2026-10.sql.gz
--rw-r--r-- 1 root root 104M Nov 21 15:39 ./backups/db-2026-11.sql.gz
+-rw-r--r-- 1 root root  60M Nov 21 19:39 ./app/logs/app.log.1
+-rw-r--r-- 1 root root 100M Nov 21 19:39 ./backups/db-2026-10.sql.gz
+-rw-r--r-- 1 root root 104M Nov 21 19:39 ./backups/db-2026-11.sql.gz
 [exit 0 — OK]
 
 # czas rozdziału: 1.6 s
@@ -87,6 +87,25 @@ $ find /proc/*/fd -lname '*(deleted)' -printf '%p -> %l\n' 2>/dev/null
 $ kill %1
 [exit 0 — OK]
 
-# czas rozdziału: 2.2 s
+# czas rozdziału: 1.5 s
 
-# PODSUMOWANIE: 14 poleceń, błędów: 0
+## [08] Quick check
+$ printf '100M\n9M\n1G\n' | sort
+100M
+1G
+9M
+[exit 0 — OK]
+
+$ printf '100M\n9M\n1G\n' | sort -h
+9M
+100M
+1G
+[exit 0 — OK]
+
+$ fallocate -l 10M quiz.tmp && { sleep 30 < quiz.tmp & p=$!; rm quiz.tmp; ls -l /proc/$p/fd/0 | sed 's/.*-> //'; kill $p; }
+/lab/srv/quiz.tmp (deleted)
+[exit 0 — OK]
+
+# czas rozdziału: 1.6 s
+
+# PODSUMOWANIE: 17 poleceń, błędów: 0
