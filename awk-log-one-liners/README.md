@@ -1,6 +1,7 @@
 # awk for people who hate awk: 8 one-liners that answer real questions about a log
 
-> 🎬 Video: https://youtu.be/wpnCU4BFD3E (public from Nov 26, 2026)
+> 🎬 Video: https://youtu.be/wpnCU4BFD3E (public from Nov 22, 2026)
+> 📝 Lesson page with a short quiz: https://shellprovenai.github.io/lekcje/awk-log-one-liners/
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 

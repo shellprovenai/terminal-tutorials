@@ -1,6 +1,6 @@
 # SQLite in the terminal: query a CSV file in 5 minutes (and the text-number trap)
 
-> 🎬 Video: https://youtu.be/HDbG6iW3WRM (public from Nov 24, 2026)
+> 🎬 Video: https://youtu.be/HDbG6iW3WRM (public from Nov 22, 2026)
 > 📝 Lesson page with a short quiz: https://shellprovenai.github.io/lekcje/sqlite-csv/
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.

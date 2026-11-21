@@ -1,6 +1,7 @@
 # Linux file permissions: read ls -l, fix "Permission denied", and never chmod 777
 
-> 🎬 Video: https://youtu.be/oUAslKIrS1k (public from Nov 23, 2026)
+> 🎬 Video: https://youtu.be/oUAslKIrS1k (public from Nov 22, 2026)
+> 📝 Lesson page with a short quiz: https://shellprovenai.github.io/lekcje/chmod-permissions/
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 

@@ -1,6 +1,7 @@
 # SSH keys from scratch: generate, install, shortcut with ~/.ssh/config, turn off passwords
 
-> 🎬 Video: https://youtu.be/Ng6o-q27tVE (public from Nov 25, 2026)
+> 🎬 Video: https://youtu.be/Ng6o-q27tVE (public from Nov 22, 2026)
+> 📝 Lesson page with a short quiz: https://shellprovenai.github.io/lekcje/ssh-keys/
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 
