@@ -1,5 +1,5 @@
 # polecenia.log — Cron job not running? It works in the terminal, here's why it fails in cron
-# obraz: localhost/shellproven-cron-debug:13 (sha256:471af4740a3d26642e294e1c05fc05d2f8bb3051c1809d17a4ec6a25108c5f5e), Debian 13.7, uruchomiono 2026-11-21T15:41:13Z
+# obraz: localhost/shellproven-cron-debug:13 (sha256:471af4740a3d26642e294e1c05fc05d2f8bb3051c1809d17a4ec6a25108c5f5e), Debian 13.7, uruchomiono 2026-11-21T20:06:15Z
 # wersje: cron 3.0pl1-197
 # pakiety doinstalowane z repozytorium Debiana: cron
 # katalog roboczy: /lab/jobs; każdy rozdział = osobna powłoka (bash --norc), jak w nagraniu
@@ -23,7 +23,7 @@ saved report
 report for demo: 42 orders
 [exit 0 — OK]
 
-# czas rozdziału: 2.0 s
+# czas rozdziału: 1.5 s
 
 ## [03] Schedule it, and log the output
 % printf '# min hour day month weekday  command\n* * * * * /lab/jobs/backup.sh >> /tmp/backup.log 2>&1\n* * * * * env > /tmp/cron-env.txt\n' > first.cron
@@ -41,7 +41,7 @@ $ crontab first.cron && crontab -l
 * * * * * env > /tmp/cron-env.txt
 [exit 0 — OK]
 
-# czas rozdziału: 1.9 s
+# czas rozdziału: 1.7 s
 
 ## [04] Why it fails
 % for i in $(seq 90); do [ -s /tmp/cron-env.txt ] && break; sleep 2; done; sleep 2
@@ -64,7 +64,7 @@ $ ls /root
 report.txt
 [exit 0 — OK]
 
-# czas rozdziału: 47.6 s
+# czas rozdziału: 45.4 s
 
 ## [05] The fix: PATH and cd in the crontab
 % printf 'PATH=/usr/local/bin:/usr/bin:/bin\n# min hour day month weekday  command\n* * * * * cd /lab/jobs && ./backup.sh >> /tmp/backup.log 2>&1\n* * * * * echo "ran at $(date +%%H:%%M)" >> /tmp/broken.log\n* * * * * echo "ran at $(date +\\%%H:\\%%M)" >> /tmp/fixed.log\n' > fixed.cron
@@ -81,7 +81,7 @@ PATH=/usr/local/bin:/usr/bin:/bin
 $ crontab fixed.cron
 [exit 0 — OK]
 
-# czas rozdziału: 2.1 s
+# czas rozdziału: 1.6 s
 
 ## [06] Check it
 % for i in $(seq 90); do [ -s /tmp/fixed.log ] && break; sleep 2; done; sleep 2
@@ -92,7 +92,7 @@ saved report
 report for demo: 42 orders
 [exit 0 — OK]
 
-# czas rozdziału: 57.8 s
+# czas rozdziału: 59.2 s
 
 ## [07] The percent-sign trap
 $ cat /tmp/broken.log
@@ -100,9 +100,24 @@ cat: /tmp/broken.log: No such file or directory
 [exit 1 — OK (oczekiwany ≠0)]
 
 $ cat /tmp/fixed.log
-ran at 15:43
+ran at 20:08
 [exit 0 — OK]
 
-# czas rozdziału: 2.0 s
+# czas rozdziału: 1.2 s
 
-# PODSUMOWANIE: 18 poleceń, błędów: 0
+## [08] Quick check
+$ grep '^PATH=' /tmp/cron-env.txt
+PATH=/usr/bin:/bin
+[exit 0 — OK]
+
+$ cat /tmp/broken.log
+cat: /tmp/broken.log: No such file or directory
+[exit 1 — OK (oczekiwany ≠0)]
+
+$ cat /tmp/fixed.log
+ran at 20:08
+[exit 0 — OK]
+
+# czas rozdziału: 1.9 s
+
+# PODSUMOWANIE: 21 poleceń, błędów: 0

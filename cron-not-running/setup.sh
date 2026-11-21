@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Demo folder used in the video. Run in an empty directory (ideally in a container):
-#   podman run --rm -it localhost/shellproven-cron-debug:13 bash
+#   podman run --rm -it docker.io/library/debian:13 bash
 set -euo pipefail
 # needs: apt-get install -y cron
 mkdir -p /lab/jobs && cd /lab/jobs

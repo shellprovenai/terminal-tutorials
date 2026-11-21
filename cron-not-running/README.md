@@ -1,8 +1,8 @@
 # Cron job not running? It works in the terminal, here's why it fails in cron
 
-> 🎬 Video: premieres Nov 26, 2026 on [youtube.com/@ShellProven](https://www.youtube.com/@ShellProven) (direct link added on release).
+> 🎬 Video: premieres on [youtube.com/@ShellProven](https://www.youtube.com/@ShellProven) (direct link added on release).
 
-Commands from the video, tested in `localhost/shellproven-cron-debug:13`. Run `setup.sh` first to recreate the demo folder.
+Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 
 > Script and narration made with the help of AI. Every command below was executed; outputs are real.
 
@@ -92,7 +92,34 @@ cat: /tmp/broken.log: No such file or directory
 
 ```console
 $ cat /tmp/fixed.log
-ran at 15:43
+ran at 20:08
+```
+
+## Quick check
+
+**Question 1.** My script works by hand, but in cron it says report-tool: not found. Why?
+
+**Answer:** cron's PATH is only /usr/bin:/bin — Set a path line at the top of the crontab, or call the program by its full path.
+
+**Question 2.** What does a plain % sign do inside a crontab line?
+
+**Answer:** It starts a new line and cuts the command — Escape every percent sign with a backslash, or move the command into a script.
+
+Commands that check the answers (run in the same container, after the lesson):
+
+```console
+$ grep '^PATH=' /tmp/cron-env.txt
+PATH=/usr/bin:/bin
+```
+
+```console
+$ cat /tmp/broken.log
+cat: /tmp/broken.log: No such file or directory
+```
+
+```console
+$ cat /tmp/fixed.log
+ran at 20:08
 ```
 
 ## Files
