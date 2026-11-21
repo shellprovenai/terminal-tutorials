@@ -1,8 +1,8 @@
 # SSH keys from scratch: generate, install, shortcut with ~/.ssh/config, turn off passwords
 
-> 🎬 Video: premieres Nov 25, 2026 on [youtube.com/@ShellProven](https://www.youtube.com/@ShellProven) (direct link added on release).
+> 🎬 Video: https://youtu.be/Ng6o-q27tVE (public from Nov 25, 2026)
 
-Commands from the video, tested in `localhost/shellproven-ssh-keys:13`. Run `setup.sh` first to recreate the demo folder.
+Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 
 > Script and narration made with the help of AI. Every command below was executed; outputs are real.
 
@@ -14,26 +14,26 @@ Generating public/private ed25519 key pair.
 Your identification has been saved in /root/.ssh/id_ed25519
 Your public key has been saved in /root/.ssh/id_ed25519.pub
 The key fingerprint is:
-SHA256:qI0au6ZY7D4j2PLAA7RwSxQI1Y0/cBBOHuP9d/v7VBo laptop
+SHA256:yZJMUMO8ZslIf2trDS5G/fYiQl2u8TCJZGaxeYiAG5o laptop
 The key's randomart image is:
 +--[ED25519 256]--+
-|oo+o*=           |
-|.. =++o          |
-|..o ++.          |
-|oo..  oo         |
-|...   ..S . . E .|
-|o.   +   . . . o.|
-|o++ o .     . . .|
-|=+*+         . . |
-|oBB+          oo.|
+| .  .+o          |
+|o . ..+.         |
+|.+ o =.B         |
+|E   oo/oo..      |
+|     B+*S=       |
+|      +.@ .      |
+|     o o @       |
+|      + * *      |
+|     . + o o.    |
 +----[SHA256]-----+
 ```
 
 ```console
 $ ls -l ~/.ssh
 total 8
--rw------- 1 root root 399 Nov 21 15:40 id_ed25519
--rw-r--r-- 1 root root  88 Nov 21 15:40 id_ed25519.pub
+-rw------- 1 root root 399 Nov 21 19:47 id_ed25519
+-rw-r--r-- 1 root root  88 Nov 21 19:47 id_ed25519.pub
 ```
 
 ## 2. Install the public key on the server
@@ -107,6 +107,40 @@ deploy@localhost: Permission denied (publickey).
 ```console
 $ ssh web 'echo key login still works'
 key login still works
+```
+
+## Quick check
+
+**Question 1.** Which file do I give to the server: id_ed25519 or id_ed25519.pub?
+
+**Answer:** id_ed25519.pub (the public key) — The file without an extension is the private key. It never leaves your computer.
+
+**Question 2.** Key login worked yesterday. After someone ran chmod 777 on the home folder, it says Permission denied. Why?
+
+**Answer:** sshd ignores keys that other users could change — Home, dot s s h and authorized_keys must not be writable by others. Fix the permissions and the key works again.
+
+Commands that check the answers (run in the same container, after the lesson):
+
+```console
+$ head -c 11 ~/.ssh/id_ed25519.pub; echo
+ssh-ed25519
+```
+
+```console
+$ head -1 ~/.ssh/id_ed25519
+-----BEGIN OPENSSH PRIVATE KEY-----
+```
+
+```console
+$ stat -c '%a %n' /home/deploy /home/deploy/.ssh /home/deploy/.ssh/authorized_keys
+700 /home/deploy
+700 /home/deploy/.ssh
+600 /home/deploy/.ssh/authorized_keys
+```
+
+```console
+$ ssh -o BatchMode=yes deploy@localhost whoami
+deploy
 ```
 
 ## Files

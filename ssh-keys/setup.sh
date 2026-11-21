@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Demo folder used in the video. Run in an empty directory (ideally in a container):
-#   podman run --rm -it localhost/shellproven-ssh-keys:13 bash
+#   podman run --rm -it docker.io/library/debian:13 bash
 set -euo pipefail
 # needs: apt-get install -y openssh-server openssh-client
 mkdir -p /lab && cd /lab

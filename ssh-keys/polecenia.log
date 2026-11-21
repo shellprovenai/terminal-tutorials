@@ -1,5 +1,5 @@
 # polecenia.log — SSH keys from scratch: generate, install, shortcut with ~/.ssh/config, turn off passwords
-# obraz: localhost/shellproven-ssh-keys:13 (sha256:7181aa18ccbef3c812e834ef8242ac67c639f464af9075a24a1b5cb9ae08bf63), Debian 13.7, uruchomiono 2026-11-21T15:40:28Z
+# obraz: localhost/shellproven-ssh-keys:13 (sha256:7181aa18ccbef3c812e834ef8242ac67c639f464af9075a24a1b5cb9ae08bf63), Debian 13.7, uruchomiono 2026-11-21T19:47:12Z
 # wersje: OpenSSH_10.0p2 Debian-7+deb13u4, OpenSSL 3.5.7 9 Jun 2026
 # pakiety doinstalowane z repozytorium Debiana: openssh-server openssh-client
 # katalog roboczy: /lab; każdy rozdział = osobna powłoka (bash --norc), jak w nagraniu
@@ -14,28 +14,28 @@ Generating public/private ed25519 key pair.
 Your identification has been saved in /root/.ssh/id_ed25519
 Your public key has been saved in /root/.ssh/id_ed25519.pub
 The key fingerprint is:
-SHA256:qI0au6ZY7D4j2PLAA7RwSxQI1Y0/cBBOHuP9d/v7VBo laptop
+SHA256:yZJMUMO8ZslIf2trDS5G/fYiQl2u8TCJZGaxeYiAG5o laptop
 The key's randomart image is:
 +--[ED25519 256]--+
-|oo+o*=           |
-|.. =++o          |
-|..o ++.          |
-|oo..  oo         |
-|...   ..S . . E .|
-|o.   +   . . . o.|
-|o++ o .     . . .|
-|=+*+         . . |
-|oBB+          oo.|
+| .  .+o          |
+|o . ..+.         |
+|.+ o =.B         |
+|E   oo/oo..      |
+|     B+*S=       |
+|      +.@ .      |
+|     o o @       |
+|      + * *      |
+|     . + o o.    |
 +----[SHA256]-----+
 [exit 0 — OK]
 
 $ ls -l ~/.ssh
 total 8
--rw------- 1 root root 399 Nov 21 15:40 id_ed25519
--rw-r--r-- 1 root root  88 Nov 21 15:40 id_ed25519.pub
+-rw------- 1 root root 399 Nov 21 19:47 id_ed25519
+-rw-r--r-- 1 root root  88 Nov 21 19:47 id_ed25519.pub
 [exit 0 — OK]
 
-# czas rozdziału: 3.4 s
+# czas rozdziału: 3.1 s
 
 ## [03] 2. Install the public key on the server
 $ install -d -m 700 -o deploy -g deploy /home/deploy/.ssh && install -m 600 -o deploy -g deploy ~/.ssh/id_ed25519.pub /home/deploy/.ssh/authorized_keys
@@ -46,7 +46,7 @@ Warning: Permanently added 'localhost' (ED25519) to the list of known hosts.
 deploy
 [exit 0 — OK]
 
-# czas rozdziału: 2.4 s
+# czas rozdziału: 1.9 s
 
 ## [04] 3. Why key login suddenly stops working
 $ chmod 777 /home/deploy && ssh -o BatchMode=yes deploy@localhost whoami
@@ -57,7 +57,7 @@ $ chmod 700 /home/deploy && ssh -o BatchMode=yes deploy@localhost whoami
 deploy
 [exit 0 — OK]
 
-# czas rozdziału: 2.6 s
+# czas rozdziału: 1.6 s
 
 ## [05] 4. A shortcut in ~/.ssh/config
 $ printf 'Host web\n    HostName localhost\n    User deploy\n    IdentityFile ~/.ssh/id_ed25519\n' > ~/.ssh/config && chmod 600 ~/.ssh/config
@@ -75,7 +75,7 @@ deploy
 demo
 [exit 0 — OK]
 
-# czas rozdziału: 2.0 s
+# czas rozdziału: 1.9 s
 
 ## [06] 5. Turn off password logins
 $ sshd -T | grep -i '^passwordauthentication'
@@ -98,6 +98,27 @@ $ ssh web 'echo key login still works'
 key login still works
 [exit 0 — OK]
 
-# czas rozdziału: 2.5 s
+# czas rozdziału: 3.0 s
 
-# PODSUMOWANIE: 15 poleceń, błędów: 0
+## [07] Quick check
+$ head -c 11 ~/.ssh/id_ed25519.pub; echo
+ssh-ed25519
+[exit 0 — OK]
+
+$ head -1 ~/.ssh/id_ed25519
+-----BEGIN OPENSSH PRIVATE KEY-----
+[exit 0 — OK]
+
+$ stat -c '%a %n' /home/deploy /home/deploy/.ssh /home/deploy/.ssh/authorized_keys
+700 /home/deploy
+700 /home/deploy/.ssh
+600 /home/deploy/.ssh/authorized_keys
+[exit 0 — OK]
+
+$ ssh -o BatchMode=yes deploy@localhost whoami
+deploy
+[exit 0 — OK]
+
+# czas rozdziału: 2.1 s
+
+# PODSUMOWANIE: 19 poleceń, błędów: 0
