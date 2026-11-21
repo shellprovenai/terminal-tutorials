@@ -1,6 +1,7 @@
 # Find files changed in the last 24 hours (and the -mtime +1 trap)
 
 > 🎬 Video: https://youtu.be/lIVTi5okxE4 (public from Nov 22, 2026)
+> 📝 Lesson page with a short quiz: https://shellprovenai.github.io/lekcje/find-changed-24h/
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 
