@@ -1,6 +1,7 @@
 # Bash redirection explained: >, >>, 2>, 2>&1 and | (and why the order matters)
 
-> 🎬 Video: premieres Nov 24, 2026 on [youtube.com/@ShellProven](https://www.youtube.com/@ShellProven) (direct link added on release).
+> 🎬 Video: premieres on [youtube.com/@ShellProven](https://www.youtube.com/@ShellProven) (direct link added on release).
+> 📝 Lesson page with a short quiz: https://shellprovenai.github.io/lekcje/bash-redirection/
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 
@@ -122,6 +123,36 @@ $ cat run.log
 ls: cannot access 'missing': No such file or directory
 logs:
 a.log
+```
+
+## Quick check
+
+**Question 1.** I want stdout and stderr in one file. Is it cmd 2>&1 > all.txt or cmd > all.txt 2>&1?
+
+**Answer:** cmd > all.txt 2>&1 — Redirections run left to right. Point stream one at the file first, then copy stream two there.
+
+**Question 2.** Which arrow adds to the end of a log file instead of wiping it: > or >>?
+
+**Answer:** >> — Two arrows append. A single arrow replaces the whole file.
+
+Commands that check the answers (run in the same container, after the lesson):
+
+```console
+$ ls logs missing > quiz.txt 2>&1
+
+```
+
+```console
+$ cat quiz.txt
+ls: cannot access 'missing': No such file or directory
+logs:
+a.log
+```
+
+```console
+$ echo a > quiz2.txt && echo b >> quiz2.txt && cat quiz2.txt
+a
+b
 ```
 
 ## Files
