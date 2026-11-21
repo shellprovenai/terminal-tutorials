@@ -1,6 +1,6 @@
 # Linux file permissions: read ls -l, fix "Permission denied", and never chmod 777
 
-> 🎬 Video: premieres Nov 23, 2026 on [youtube.com/@ShellProven](https://www.youtube.com/@ShellProven) (direct link added on release).
+> 🎬 Video: premieres on [youtube.com/@ShellProven](https://www.youtube.com/@ShellProven) (direct link added on release).
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 
@@ -11,10 +11,10 @@ Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh`
 ```console
 $ ls -l
 total 16
--rw-r--r-- 1 alice web   24 Nov 21 15:37 deploy.sh
--rw-r--r-- 1 alice web    6 Nov 21 15:37 index.html
-drwxr-xr-x 2 alice web 4096 Nov 21 15:37 private
--rw-r--r-- 1 alice web   17 Nov 21 15:37 secret.env
+-rw-r--r-- 1 alice web   24 Nov 21 19:15 deploy.sh
+-rw-r--r-- 1 alice web    6 Nov 21 19:15 index.html
+drwxr-xr-x 2 alice web 4096 Nov 21 19:15 private
+-rw-r--r-- 1 alice web   17 Nov 21 19:15 secret.env
 ```
 
 ## From letters to numbers
@@ -65,7 +65,7 @@ ls: cannot open directory 'private': Permission denied
 
 ```console
 $ ls -ld private
-drwxr-x--- 2 alice web 4096 Nov 21 15:37 private
+drwxr-x--- 2 alice web 4096 Nov 21 19:15 private
 ```
 
 ## Why chmod 777 is a bad fix
@@ -89,7 +89,39 @@ sh: 1: cannot create index.html: Permission denied
 
 ```console
 $ chown bob:web index.html && ls -l index.html
--rw-r--r-- 1 bob web 8 Nov 21 15:37 index.html
+-rw-r--r-- 1 bob web 8 Nov 21 19:15 index.html
+```
+
+## Quick check
+
+**Question 1.** Alice owns deploy.sh, but running it says Permission denied. Is the fix chmod 777 or chmod u+x?
+
+**Answer:** chmod u+x deploy.sh — Only the execute bit was missing. Seven seven seven would let every user on the system change the script.
+
+**Question 2.** Which mode lets only the owner read and write a password file?
+
+**Answer:** chmod 600 secret.env — Six hundred: read and write for the owner, nothing for the group or anyone else.
+
+Commands that check the answers (run in the same container, after the lesson):
+
+```console
+$ stat -c '%A %a %n' deploy.sh
+-rwxr-xr-- 754 deploy.sh
+```
+
+```console
+$ su alice -c ./deploy.sh
+deployed
+```
+
+```console
+$ stat -c '%A %a %n' secret.env
+-rw------- 600 secret.env
+```
+
+```console
+$ su bob -c 'cat secret.env'
+cat: secret.env: Permission denied
 ```
 
 ## Files
