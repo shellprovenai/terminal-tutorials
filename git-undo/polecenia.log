@@ -1,5 +1,5 @@
 # polecenia.log — Undo anything in Git: restore vs reset vs revert (live demos)
-# obraz: localhost/shellproven-git-undo:13 (sha256:01f94cda81545197f7b16be75e619dc3e66755398aa8b9a0083a64585fad2c26), Debian 13.7, uruchomiono 2026-11-21T15:37:01Z
+# obraz: localhost/shellproven-git-undo:13 (sha256:01f94cda81545197f7b16be75e619dc3e66755398aa8b9a0083a64585fad2c26), Debian 13.7, uruchomiono 2026-11-21T19:06:57Z
 # wersje: git version 2.47.3
 # pakiety doinstalowane z repozytorium Debiana: git ca-certificates
 # katalog roboczy: /lab/shop; każdy rozdział = osobna powłoka (bash --norc), jak w nagraniu
@@ -19,12 +19,12 @@
 [exit 0 — OK]
 
 $ git log --oneline
-15c907a Enable debug
-fd5812a Add currency
-1e485e5 Add config
+f1f7a48 Enable debug
+b01e5d3 Add currency
+52e0461 Add config
 [exit 0 — OK]
 
-# czas rozdziału: 2.0 s
+# czas rozdziału: 1.7 s
 
 ## [03] 1. Throw away an edit: git restore
 $ echo "price = 0" >> app.conf
@@ -57,7 +57,7 @@ $ git restore --staged app.conf && git status --short
 $ git restore app.conf
 [exit 0 — OK]
 
-# czas rozdziału: 1.6 s
+# czas rozdziału: 2.7 s
 
 ## [05] 3. Undo the last commit, keep the changes: reset --soft
 $ git reset --soft HEAD~1
@@ -65,21 +65,21 @@ $ git reset --soft HEAD~1
 
 $ git status --short && git log --oneline
 M  app.conf
-fd5812a Add currency
-1e485e5 Add config
+b01e5d3 Add currency
+52e0461 Add config
 [exit 0 — OK]
 
 $ git commit -qm "Enable debug (only in dev)" && git log --oneline
-c7dd427 Enable debug (only in dev)
-fd5812a Add currency
-1e485e5 Add config
+4949205 Enable debug (only in dev)
+b01e5d3 Add currency
+52e0461 Add config
 [exit 0 — OK]
 
-# czas rozdziału: 1.6 s
+# czas rozdziału: 2.1 s
 
 ## [06] 4. Drop a commit with reset --hard, then get it back
 $ git reset --hard HEAD~1
-HEAD is now at fd5812a Add currency
+HEAD is now at b01e5d3 Add currency
 [exit 0 — OK]
 
 $ cat app.conf
@@ -88,36 +88,54 @@ currency = EUR
 [exit 0 — OK]
 
 $ git reflog | head -3
-fd5812a HEAD@{0}: reset: moving to HEAD~1
-c7dd427 HEAD@{1}: commit: Enable debug (only in dev)
-fd5812a HEAD@{2}: reset: moving to HEAD~1
+b01e5d3 HEAD@{0}: reset: moving to HEAD~1
+4949205 HEAD@{1}: commit: Enable debug (only in dev)
+b01e5d3 HEAD@{2}: reset: moving to HEAD~1
 [exit 0 — OK]
 
 $ git reset --hard "HEAD@{1}" && git log --oneline
-HEAD is now at c7dd427 Enable debug (only in dev)
-c7dd427 Enable debug (only in dev)
-fd5812a Add currency
-1e485e5 Add config
+HEAD is now at 4949205 Enable debug (only in dev)
+4949205 Enable debug (only in dev)
+b01e5d3 Add currency
+52e0461 Add config
 [exit 0 — OK]
 
-# czas rozdziału: 1.9 s
+# czas rozdziału: 1.8 s
 
 ## [07] 5. Undo a shared commit: git revert
 $ git revert --no-edit HEAD
-[main f9720ea] Revert "Enable debug (only in dev)"
- Date: Sat Nov 21 15:37:12 2026 +0000
+[main e8bee19] Revert "Enable debug (only in dev)"
+ Date: Sat Nov 21 19:07:10 2026 +0000
  1 file changed, 1 deletion(-)
 [exit 0 — OK]
 
 $ git log --oneline && cat app.conf
-f9720ea Revert "Enable debug (only in dev)"
-c7dd427 Enable debug (only in dev)
-fd5812a Add currency
-1e485e5 Add config
+e8bee19 Revert "Enable debug (only in dev)"
+4949205 Enable debug (only in dev)
+b01e5d3 Add currency
+52e0461 Add config
 price = 10
 currency = EUR
 [exit 0 — OK]
 
-# czas rozdziału: 1.5 s
+# czas rozdziału: 2.4 s
 
-# PODSUMOWANIE: 21 poleceń, błędów: 0
+## [08] Quick check
+$ git log --oneline
+e8bee19 Revert "Enable debug (only in dev)"
+4949205 Enable debug (only in dev)
+b01e5d3 Add currency
+52e0461 Add config
+[exit 0 — OK]
+
+$ git reflog | head -5
+e8bee19 HEAD@{0}: revert: Revert "Enable debug (only in dev)"
+4949205 HEAD@{1}: reset: moving to HEAD@{1}
+b01e5d3 HEAD@{2}: reset: moving to HEAD~1
+4949205 HEAD@{3}: commit: Enable debug (only in dev)
+b01e5d3 HEAD@{4}: reset: moving to HEAD~1
+[exit 0 — OK]
+
+# czas rozdziału: 1.9 s
+
+# PODSUMOWANIE: 23 poleceń, błędów: 0
