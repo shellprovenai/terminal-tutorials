@@ -1,6 +1,6 @@
 # Cron job not running? It works in the terminal, here's why it fails in cron
 
-> 🎬 Video: premieres on [youtube.com/@ShellProven](https://www.youtube.com/@ShellProven) (direct link added on release).
+> 🎬 Video: https://youtu.be/c2R8fSO_8Uo (public from Nov 26, 2026)
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 
