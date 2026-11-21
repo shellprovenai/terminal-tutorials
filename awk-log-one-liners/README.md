@@ -1,6 +1,6 @@
 # awk for people who hate awk: 8 one-liners that answer real questions about a log
 
-> 🎬 Video: premieres Nov 26, 2026 on [youtube.com/@ShellProven](https://www.youtube.com/@ShellProven) (direct link added on release).
+> 🎬 Video: premieres on [youtube.com/@ShellProven](https://www.youtube.com/@ShellProven) (direct link added on release).
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 
@@ -97,6 +97,34 @@ $ awk "{print $1}" access.log
 10.0.0.5 GET /missing.png 404 256 2
 10.0.0.9 GET /api/orders 200 8192 120
 10.0.0.7 GET /index.html 200 5120 10
+```
+
+## Quick check
+
+**Question 1.** Why does awk "{print $1}" access.log print whole lines?
+
+**Answer:** The shell replaced $1 inside the double quotes — Bash swapped dollar one for its own empty variable before awk ran. Use single quotes around awk programs.
+
+**Question 2.** Which awk variable always holds the last field of a line?
+
+**Answer:** $NF — NF is the number of fields, so $NF is the last one.
+
+Commands that check the answers (run in the same container, after the lesson):
+
+```console
+$ echo "{print $1}"
+{print }
+```
+
+```console
+$ awk '{print $1}' access.log | head -2
+10.0.0.5
+10.0.0.7
+```
+
+```console
+$ echo "a b c d" | awk '{print NF, $NF}'
+4 d
 ```
 
 ## Files
