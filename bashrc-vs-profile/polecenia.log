@@ -1,0 +1,102 @@
+# polecenia.log — .bashrc vs .profile vs .bash_profile: why your alias works in one terminal and not the other
+# obraz: docker.io/library/debian:13 (sha256:bfc36aecdece0387418759dba474aa856c026ca8087da3606b41b90ab0509c99), Debian 13.7, uruchomiono 2026-11-21T21:56:51Z
+# wersje: GNU bash, version 5.2.37(1)-release (x86_64-pc-linux-gnu)
+# pakiety doinstalowane z repozytorium Debiana: (brak)
+# katalog roboczy: /root; każdy rozdział = osobna powłoka (bash --norc), jak w nagraniu
+# '%' = przygotowanie (w filmie ukryte), '$' = polecenie pokazane w filmie
+
+## [02] The startup files
+% useradd -m -s /bin/bash demo
+[exit 0 — OK]
+
+% sed -i '1i echo "-> reading ~/.bashrc"' /home/demo/.bashrc && sed -i '1i echo "-> reading ~/.profile"' /home/demo/.profile
+[exit 0 — OK]
+
+% echo "alias deploy='echo deploying the app'" >> /home/demo/.bashrc
+[exit 0 — OK]
+
+$ ls -A /home/demo
+.bash_logout
+.bashrc
+.profile
+[exit 0 — OK]
+
+$ tail -n 1 /home/demo/.bashrc
+alias deploy='echo deploying the app'
+[exit 0 — OK]
+
+# czas rozdziału: 2.1 s
+
+## [03] Login shell vs interactive shell
+$ su demo -c "bash -l -c true"
+-> reading ~/.profile
+-> reading ~/.bashrc
+[exit 0 — OK]
+
+$ grep -A2 'BASH_VERSION' /home/demo/.profile
+if [ -n "$BASH_VERSION" ]; then
+    # include .bashrc if it exists
+    if [ -f "$HOME/.bashrc" ]; then
+[exit 0 — OK]
+
+$ su demo -c "bash -i -c true" 2>/dev/null
+-> reading ~/.bashrc
+[exit 0 — OK]
+
+$ su demo -c "bash -l -i -c 'type deploy'" 2>/dev/null
+-> reading ~/.profile
+-> reading ~/.bashrc
+deploy is aliased to `echo deploying the app'
+[exit 0 — OK]
+
+# czas rozdziału: 2.5 s
+
+## [04] The trap: creating .bash_profile
+$ echo 'export PATH="$HOME/bin:$PATH"' > /home/demo/.bash_profile
+[exit 0 — OK]
+
+$ su demo -c "bash -l -i -c 'type deploy || echo deploy is missing'" 2>/dev/null
+deploy is missing
+[exit 0 — OK]
+
+$ su demo -c "bash -i -c 'type deploy'" 2>/dev/null
+-> reading ~/.bashrc
+deploy is aliased to `echo deploying the app'
+[exit 0 — OK]
+
+# czas rozdziału: 1.5 s
+
+## [05] The fix: one line
+$ echo '[ -f ~/.profile ] && . ~/.profile' >> /home/demo/.bash_profile && cat /home/demo/.bash_profile
+export PATH="$HOME/bin:$PATH"
+[ -f ~/.profile ] && . ~/.profile
+[exit 0 — OK]
+
+$ su demo -c "bash -l -i -c 'type deploy'" 2>/dev/null
+-> reading ~/.profile
+-> reading ~/.bashrc
+deploy is aliased to `echo deploying the app'
+[exit 0 — OK]
+
+# czas rozdziału: 1.5 s
+
+## [06] Quick check
+$ cat /home/demo/.bash_profile
+export PATH="$HOME/bin:$PATH"
+[ -f ~/.profile ] && . ~/.profile
+[exit 0 — OK]
+
+$ su demo -c "bash -l -i -c 'type deploy'" 2>/dev/null
+-> reading ~/.profile
+-> reading ~/.bashrc
+deploy is aliased to `echo deploying the app'
+[exit 0 — OK]
+
+$ su demo -c "bash -i -c 'type deploy'" 2>/dev/null
+-> reading ~/.bashrc
+deploy is aliased to `echo deploying the app'
+[exit 0 — OK]
+
+# czas rozdziału: 1.5 s
+
+# PODSUMOWANIE: 17 poleceń, błędów: 0

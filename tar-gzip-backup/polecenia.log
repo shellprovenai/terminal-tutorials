@@ -1,0 +1,143 @@
+# polecenia.log — tar and gzip without the usual mistakes: back up a folder, skip the junk, verify the archive
+# obraz: docker.io/library/debian:13 (sha256:bfc36aecdece0387418759dba474aa856c026ca8087da3606b41b90ab0509c99), Debian 13.7, uruchomiono 2026-11-21T20:16:11Z
+# wersje: tar (GNU tar) 1.35 | gzip 1.13
+# pakiety doinstalowane z repozytorium Debiana: (brak)
+# katalog roboczy: /lab/work; każdy rozdział = osobna powłoka (bash --norc), jak w nagraniu
+# '%' = przygotowanie (w filmie ukryte), '$' = polecenie pokazane w filmie
+
+## [02] The project folder
+% mkdir -p project/src project/node_modules/lib project/logs
+[exit 0 — OK]
+
+% printf 'print("hello")\n' > project/src/app.py && printf 'debug = false\n' > project/src/config.ini && printf '# Demo project\n' > project/README.md
+[exit 0 — OK]
+
+% head -c 6M /dev/urandom > project/node_modules/lib/bundle.bin && head -c 2M /dev/urandom > project/logs/app.log
+[exit 0 — OK]
+
+$ find project -type f | sort
+project/README.md
+project/logs/app.log
+project/node_modules/lib/bundle.bin
+project/src/app.py
+project/src/config.ini
+[exit 0 — OK]
+
+$ du -sh project
+8.1M	project
+[exit 0 — OK]
+
+# czas rozdziału: 1.5 s
+
+## [03] Create an archive and look inside
+$ tar -czf backup.tgz project
+[exit 0 — OK]
+
+$ ls -lh backup.tgz
+-rw-r--r-- 1 root root 8.1M Nov 21 20:16 backup.tgz
+[exit 0 — OK]
+
+$ tar -tzf backup.tgz
+project/
+project/src/
+project/src/app.py
+project/src/config.ini
+project/node_modules/
+project/node_modules/lib/
+project/node_modules/lib/bundle.bin
+project/logs/
+project/logs/app.log
+project/README.md
+[exit 0 — OK]
+
+# czas rozdziału: 1.5 s
+
+## [04] The trap: absolute paths
+$ tar -czf abs.tgz /lab/work/project
+tar: Removing leading `/' from member names
+[exit 0 — OK]
+
+$ tar -tzf abs.tgz | head -3
+lab/work/project/
+lab/work/project/src/
+lab/work/project/src/app.py
+[exit 0 — OK]
+
+$ mkdir /tmp/restore && tar -xzf abs.tgz -C /tmp/restore && find /tmp/restore -maxdepth 3 -type d
+/tmp/restore
+/tmp/restore/lab
+/tmp/restore/lab/work
+/tmp/restore/lab/work/project
+[exit 0 — OK]
+
+$ tar -czf good.tgz -C /lab/work project && tar -tzf good.tgz | head -3
+project/
+project/src/
+project/src/app.py
+[exit 0 — OK]
+
+# czas rozdziału: 2.0 s
+
+## [05] Skip the junk with --exclude
+$ tar -czf small.tgz --exclude=node_modules --exclude='*.log' -C /lab/work project
+[exit 0 — OK]
+
+$ tar -tzf small.tgz
+project/
+project/src/
+project/src/app.py
+project/src/config.ini
+project/logs/
+project/README.md
+[exit 0 — OK]
+
+$ ls -lh good.tgz small.tgz
+-rw-r--r-- 1 root root 8.1M Nov 21 20:16 good.tgz
+-rw-r--r-- 1 root root  282 Nov 21 20:16 small.tgz
+[exit 0 — OK]
+
+# czas rozdziału: 1.4 s
+
+## [06] Verify the backup
+$ gzip -t small.tgz && echo "gzip OK"
+gzip OK
+[exit 0 — OK]
+
+$ tar -dzf small.tgz -C /lab/work && echo "archive matches the disk"
+archive matches the disk
+[exit 0 — OK]
+
+$ echo "debug = true" > project/src/config.ini && tar -dzf small.tgz -C /lab/work
+project/src/config.ini: Mod time differs
+project/src/config.ini: Size differs
+[exit 1 — OK (oczekiwany ≠0)]
+
+$ printf 'debug = false\n' > project/src/config.ini && tar -czf small.tgz --exclude=node_modules --exclude='*.log' -C /lab/work project
+[exit 0 — OK]
+
+# czas rozdziału: 1.5 s
+
+## [07] Restore one file
+$ mkdir /tmp/one && tar -xzf small.tgz -C /tmp/one project/src/config.ini && find /tmp/one -type f
+/tmp/one/project/src/config.ini
+[exit 0 — OK]
+
+# czas rozdziału: 1.5 s
+
+## [08] Quick check
+$ tar -tzf abs.tgz | head -2
+lab/work/project/
+lab/work/project/src/
+[exit 0 — OK]
+
+$ gzip -t small.tgz && echo "gzip OK"
+gzip OK
+[exit 0 — OK]
+
+$ tar -dzf small.tgz -C /lab/work && echo "archive matches the disk"
+archive matches the disk
+[exit 0 — OK]
+
+# czas rozdziału: 1.5 s
+
+# PODSUMOWANIE: 23 poleceń, błędów: 0

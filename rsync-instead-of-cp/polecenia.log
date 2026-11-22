@@ -1,0 +1,144 @@
+# polecenia.log — rsync instead of cp: copy only what changed, dry-run first, and the trailing-slash trap
+# obraz: localhost/shellproven-rsync-instead-of-cp:13 (sha256:e82963b96bf9c60b3432e31f1f43343fb7757918334416ae9d89d432cb07c3e7), Debian 13.7, uruchomiono 2026-11-21T20:31:46Z
+# wersje: rsync  version 3.5.0  protocol version 32
+# pakiety doinstalowane z repozytorium Debiana: rsync
+# katalog roboczy: /lab/sync; każdy rozdział = osobna powłoka (bash --norc), jak w nagraniu
+# '%' = przygotowanie (w filmie ukryte), '$' = polecenie pokazane w filmie
+
+## [02] The first copy: rsync -a
+% mkdir -p photos/2026 photos/cache && for f in a b c; do head -c 300K /dev/urandom > photos/2026/$f.jpg; done
+[exit 0 — OK]
+
+% printf 'Trip notes\n' > photos/notes.txt && head -c 100K /dev/urandom > photos/cache/thumbs.tmp && printf 'old\n' > photos/old.txt
+[exit 0 — OK]
+
+$ find photos -type f | sort
+photos/2026/a.jpg
+photos/2026/b.jpg
+photos/2026/c.jpg
+photos/cache/thumbs.tmp
+photos/notes.txt
+photos/old.txt
+[exit 0 — OK]
+
+$ rsync -a photos/ backup/
+[exit 0 — OK]
+
+$ find backup -type f | sort
+backup/2026/a.jpg
+backup/2026/b.jpg
+backup/2026/c.jpg
+backup/cache/thumbs.tmp
+backup/notes.txt
+backup/old.txt
+[exit 0 — OK]
+
+# czas rozdziału: 1.2 s
+
+## [03] Only what changed: -i
+$ echo "Day 2: rain" >> photos/notes.txt && rsync -ai photos/ backup/
+>f.st...... notes.txt
+[exit 0 — OK]
+
+$ rsync -ai photos/ backup/ && echo "nothing to copy"
+nothing to copy
+[exit 0 — OK]
+
+# czas rozdziału: 1.2 s
+
+## [04] Deletions: dry run first
+$ rm photos/old.txt && rsync -ai photos/ backup/ && ls backup
+.d..t...... ./
+2026
+cache
+notes.txt
+old.txt
+[exit 0 — OK]
+
+$ rsync -ain --delete photos/ backup/
+*deleting   old.txt
+[exit 0 — OK]
+
+$ ls backup
+2026
+cache
+notes.txt
+old.txt
+[exit 0 — OK]
+
+$ rsync -ai --delete photos/ backup/ && ls backup
+*deleting   old.txt
+2026
+cache
+notes.txt
+[exit 0 — OK]
+
+# czas rozdziału: 1.5 s
+
+## [05] The trailing-slash trap
+$ rsync -a photos/ copy1/ && ls copy1
+2026
+cache
+notes.txt
+[exit 0 — OK]
+
+$ rsync -a photos copy2/ && ls copy2
+photos
+[exit 0 — OK]
+
+# czas rozdziału: 1.5 s
+
+## [06] Skip files with --exclude
+$ rsync -ai --delete --exclude='*.tmp' --exclude=cache/ photos/ clean/
+created directory clean
+cd+++++++++ ./
+>f+++++++++ notes.txt
+cd+++++++++ 2026/
+>f+++++++++ 2026/a.jpg
+>f+++++++++ 2026/b.jpg
+>f+++++++++ 2026/c.jpg
+[exit 0 — OK]
+
+$ find clean -type f | sort
+clean/2026/a.jpg
+clean/2026/b.jpg
+clean/2026/c.jpg
+clean/notes.txt
+[exit 0 — OK]
+
+# czas rozdziału: 1.4 s
+
+## [07] Quick check
+$ ls copy1
+2026
+cache
+notes.txt
+[exit 0 — OK]
+
+$ ls copy2
+photos
+[exit 0 — OK]
+
+$ rsync -ain --delete photos/ copy2/ && ls copy2
+*deleting   photos/cache/thumbs.tmp
+*deleting   photos/cache/
+*deleting   photos/2026/c.jpg
+*deleting   photos/2026/b.jpg
+*deleting   photos/2026/a.jpg
+*deleting   photos/2026/
+*deleting   photos/notes.txt
+*deleting   photos/
+.d..t...... ./
+>f+++++++++ notes.txt
+cd+++++++++ 2026/
+>f+++++++++ 2026/a.jpg
+>f+++++++++ 2026/b.jpg
+>f+++++++++ 2026/c.jpg
+cd+++++++++ cache/
+>f+++++++++ cache/thumbs.tmp
+photos
+[exit 0 — OK]
+
+# czas rozdziału: 1.3 s
+
+# PODSUMOWANIE: 18 poleceń, błędów: 0

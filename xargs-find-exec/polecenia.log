@@ -1,0 +1,116 @@
+# polecenia.log — xargs and find -exec done right: spaces in file names, -print0, and parallel jobs
+# obraz: docker.io/library/debian:13 (sha256:bfc36aecdece0387418759dba474aa856c026ca8087da3606b41b90ab0509c99), Debian 13.7, uruchomiono 2026-11-21T22:09:56Z
+# wersje: xargs (GNU findutils) 4.10.0 | find (GNU findutils) 4.10.0
+# pakiety doinstalowane z repozytorium Debiana: (brak)
+# katalog roboczy: /lab/files; każdy rozdział = osobna powłoka (bash --norc), jak w nagraniu
+# '%' = przygotowanie (w filmie ukryte), '$' = polecenie pokazane w filmie
+
+## [02] The space problem
+% mkdir -p logs && printf 'one\ntwo\n' > "My Report.txt" && printf 'a\nb\nc\n' > notes.txt && printf 'x\n' > "Q3 plan.txt"
+[exit 0 — OK]
+
+% for i in 1 2 3 4; do seq 1000 > "logs/app $i.log"; done && touch old1.tmp "old 2.tmp"
+[exit 0 — OK]
+
+$ ls
+My Report.txt
+Q3 plan.txt
+logs
+notes.txt
+old 2.tmp
+old1.tmp
+[exit 0 — OK]
+
+$ find . -name '*.txt' | xargs wc -l
+3 ./notes.txt
+wc: ./My: No such file or directory
+wc: Report.txt: No such file or directory
+wc: ./Q3: No such file or directory
+wc: plan.txt: No such file or directory
+3 total
+[exit 123 — OK (oczekiwany ≠0)]
+
+# czas rozdziału: 1.7 s
+
+## [03] The fix: -print0 and xargs -0
+$ find . -name '*.txt' -print0 | xargs -0 wc -l
+ 3 ./notes.txt
+ 2 ./My Report.txt
+ 1 ./Q3 plan.txt
+ 6 total
+[exit 0 — OK]
+
+# czas rozdziału: 2.4 s
+
+## [04] find -exec: \; or +
+$ find . -name '*.txt' -exec echo run {} \;
+run ./notes.txt
+run ./My Report.txt
+run ./Q3 plan.txt
+[exit 0 — OK]
+
+$ find . -name '*.txt' -exec echo run {} +
+run ./notes.txt ./My Report.txt ./Q3 plan.txt
+[exit 0 — OK]
+
+# czas rozdziału: 1.5 s
+
+## [05] Preview before you delete
+$ find . -name '*.tmp' -print0 | xargs -0 echo rm --
+rm -- ./old 2.tmp ./old1.tmp
+[exit 0 — OK]
+
+$ find . -name '*.tmp' -print0 | xargs -0 rm -- && ls
+My Report.txt
+Q3 plan.txt
+logs
+notes.txt
+[exit 0 — OK]
+
+# czas rozdziału: 1.4 s
+
+## [06] Parallel jobs with xargs -P
+$ time (printf '1\n1\n1\n1\n' | xargs -n 1 sleep)
+
+real	0m4.006s
+user	0m0.005s
+sys	0m0.001s
+[exit 0 — OK]
+
+$ time (printf '1\n1\n1\n1\n' | xargs -n 1 -P 4 sleep)
+
+real	0m1.003s
+user	0m0.005s
+sys	0m0.000s
+[exit 0 — OK]
+
+$ find logs -name '*.log' -print0 | xargs -0 -n 1 -P 4 gzip && ls logs
+app 1.log.gz
+app 2.log.gz
+app 3.log.gz
+app 4.log.gz
+[exit 0 — OK]
+
+# czas rozdziału: 6.6 s
+
+## [07] Quick check
+$ find . -name '*.txt' -print0 | xargs -0 wc -l
+ 3 ./notes.txt
+ 2 ./My Report.txt
+ 1 ./Q3 plan.txt
+ 6 total
+[exit 0 — OK]
+
+$ find . -name '*.txt' -exec echo run {} \;
+run ./notes.txt
+run ./My Report.txt
+run ./Q3 plan.txt
+[exit 0 — OK]
+
+$ find . -name '*.txt' -exec echo run {} +
+run ./notes.txt ./My Report.txt ./Q3 plan.txt
+[exit 0 — OK]
+
+# czas rozdziału: 1.7 s
+
+# PODSUMOWANIE: 15 poleceń, błędów: 0

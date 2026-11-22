@@ -1,0 +1,88 @@
+# polecenia.log — Environment variables explained: export, .env files, env, and why sudo drops them
+# obraz: localhost/shellproven-env-variables:13 (sha256:48b3984c516aea4befb93d352c945911cfb46909d824058cfed4718754c121dd), Debian 13.7, uruchomiono 2026-11-21T23:06:40Z
+# wersje: GNU bash, version 5.2.37(1)-release (x86_64-pc-linux-gnu) | Sudo version 1.9.16p2
+# pakiety doinstalowane z repozytorium Debiana: sudo
+# katalog roboczy: /lab/env; każdy rozdział = osobna powłoka (bash --norc), jak w nagraniu
+# '%' = przygotowanie (w filmie ukryte), '$' = polecenie pokazane w filmie
+
+## [02] Shell variable or environment variable?
+$ GREETING=hello; bash -c 'echo "child sees: [$GREETING]"'
+child sees: []
+[exit 0 — OK]
+
+$ GREETING=hello; export GREETING; bash -c 'echo "child sees: [$GREETING]"'
+child sees: [hello]
+[exit 0 — OK]
+
+# czas rozdziału: 1.9 s
+
+## [03] Just for one command
+$ GREETING=hi bash -c 'echo "child sees: [$GREETING]"'; echo "shell has: [$GREETING]"
+child sees: [hi]
+shell has: []
+[exit 0 — OK]
+
+$ GREETING=hi echo "[$GREETING]"
+[]
+[exit 0 — OK]
+
+# czas rozdziału: 3.7 s
+
+## [04] Inspect the environment with env
+$ export GREETING=hello; env | grep -E '^(HOME|SHELL|GREETING)='
+HOME=/root
+GREETING=hello
+[exit 0 — OK]
+
+$ env -i bash -c 'echo "HOME=[$HOME] PATH=[$PATH]"'
+HOME=[] PATH=[/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin:.]
+[exit 0 — OK]
+
+# czas rozdziału: 2.3 s
+
+## [05] .env files: the source trap
+% printf 'DB_HOST=db.local\nDB_PORT=5432\n' > app.env
+[exit 0 — OK]
+
+$ cat app.env
+DB_HOST=db.local
+DB_PORT=5432
+[exit 0 — OK]
+
+$ source app.env; echo "shell: $DB_HOST"; bash -c 'echo "child: [$DB_HOST]"'
+shell: db.local
+child: []
+[exit 0 — OK]
+
+$ set -a; source app.env; set +a; bash -c 'echo "child: [$DB_HOST:$DB_PORT]"'
+child: [db.local:5432]
+[exit 0 — OK]
+
+# czas rozdziału: 3.4 s
+
+## [06] Why sudo drops your variables
+$ export DB_HOST=db.local; sudo printenv DB_HOST
+[exit 1 — OK (oczekiwany ≠0)]
+
+$ export DB_HOST=db.local; sudo --preserve-env=DB_HOST printenv DB_HOST
+db.local
+[exit 0 — OK]
+
+# czas rozdziału: 3.2 s
+
+## [07] Quick check
+$ source app.env; bash -c 'echo "child: [$DB_HOST]"'
+child: []
+[exit 0 — OK]
+
+$ set -a; source app.env; set +a; bash -c 'echo "child: [$DB_HOST]"'
+child: [db.local]
+[exit 0 — OK]
+
+$ export DB_HOST=db.local; sudo --preserve-env=DB_HOST printenv DB_HOST
+db.local
+[exit 0 — OK]
+
+# czas rozdziału: 2.2 s
+
+# PODSUMOWANIE: 15 poleceń, błędów: 0

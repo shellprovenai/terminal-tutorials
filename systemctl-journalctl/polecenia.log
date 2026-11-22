@@ -1,0 +1,132 @@
+# polecenia.log — systemctl and journalctl for people who only need five commands: status, logs, follow, enable
+# obraz: localhost/shellproven-systemctl-journalctl:13 (sha256:13284335e873c05e1350b0d15b633649524b96ef387e3aa30f8a6533d5dc5187), Debian 13.7, uruchomiono 2026-11-21T23:17:49Z
+# wersje: systemd 257 (257.13-1~deb13u1)
+# pakiety doinstalowane z repozytorium Debiana: systemd systemd-sysv dbus
+# katalog roboczy: /root; każdy rozdział = osobna powłoka (bash --norc), jak w nagraniu
+# '%' = przygotowanie (w filmie ukryte), '$' = polecenie pokazane w filmie
+
+## [02] 1. systemctl status
+% printf '#!/bin/sh\necho "hello-app starting"\nwhile true; do echo "tick $(date +%%T)"; sleep 2; done\n' > /usr/local/bin/hello-app && chmod +x /usr/local/bin/hello-app
+[exit 0 — OK]
+
+% printf '[Unit]\nDescription=Hello demo app\n\n[Service]\nExecStart=/usr/local/bin/hello-app\n\n[Install]\nWantedBy=multi-user.target\n' > /etc/systemd/system/hello-app.service
+[exit 0 — OK]
+
+% printf '[Unit]\nDescription=Report job (broken on purpose)\n\n[Service]\nType=oneshot\nExecStart=/usr/local/bin/report-tool\n' > /etc/systemd/system/report.service
+[exit 0 — OK]
+
+% systemctl daemon-reload
+[exit 0 — OK]
+
+$ systemctl start hello-app && sleep 3 && systemctl status hello-app --no-pager -n 2
+● hello-app.service - Hello demo app
+     Loaded: loaded (/etc/systemd/system/hello-app.service; disabled; preset: enabled)
+     Active: active (running) since Sat 2026-11-21 23:17:51 UTC; 3s ago
+ Invocation: 1aca39730eac412ea68f0819eba75cb9
+   Main PID: 108 (hello-app)
+      Tasks: 2 (limit: 307)
+     Memory: 404K (peak: 2M)
+        CPU: 10ms
+     CGroup: /system.slice/hello-app.service
+             ├─108 /bin/sh /usr/local/bin/hello-app
+             └─113 sleep 2
+
+Nov 21 23:17:51 demo hello-app[108]: tick 23:17:51
+Nov 21 23:17:53 demo hello-app[108]: tick 23:17:53
+[exit 0 — OK]
+
+# czas rozdziału: 4.6 s
+
+## [03] 2. Why did it fail? journalctl -u
+$ systemctl start report
+Job for report.service failed because the control process exited with error code.
+See "systemctl status report.service" and "journalctl -xeu report.service" for details.
+[exit 1 — OK (oczekiwany ≠0)]
+
+$ journalctl -u report --no-pager -n 5
+Nov 21 23:17:55 demo (ort-tool)[131]: report.service: Unable to locate executable '/usr/local/bin/report-tool': No such file or directory
+Nov 21 23:17:55 demo (ort-tool)[131]: report.service: Failed at step EXEC spawning /usr/local/bin/report-tool: No such file or directory
+Nov 21 23:17:55 demo systemd[1]: report.service: Main process exited, code=exited, status=203/EXEC
+Nov 21 23:17:55 demo systemd[1]: report.service: Failed with result 'exit-code'.
+Nov 21 23:17:55 demo systemd[1]: Failed to start report.service - Report job (broken on purpose).
+[exit 0 — OK]
+
+$ systemctl status report --no-pager
+× report.service - Report job (broken on purpose)
+     Loaded: loaded (/etc/systemd/system/report.service; static)
+     Active: failed (Result: exit-code) since Sat 2026-11-21 23:17:55 UTC; 14ms ago
+ Invocation: 7f7bc45d45024789a802d4210683dc86
+    Process: 131 ExecStart=/usr/local/bin/report-tool (code=exited, status=203/EXEC)
+   Main PID: 131 (code=exited, status=203/EXEC)
+   Mem peak: 1.7M
+        CPU: 6ms
+
+Nov 21 23:17:55 demo systemd[1]: Starting report.service - Report job (broken on purpose)...
+Nov 21 23:17:55 demo (ort-tool)[131]: report.service: Unable to locate executable '/usr/local/bin/report-tool': No such file or directory
+Nov 21 23:17:55 demo (ort-tool)[131]: report.service: Failed at step EXEC spawning /usr/local/bin/report-tool: No such file or directory
+Nov 21 23:17:55 demo systemd[1]: report.service: Main process exited, code=exited, status=203/EXEC
+Nov 21 23:17:55 demo systemd[1]: report.service: Failed with result 'exit-code'.
+Nov 21 23:17:55 demo systemd[1]: Failed to start report.service - Report job (broken on purpose).
+[exit 3 — OK (oczekiwany ≠0)]
+
+# czas rozdziału: 1.6 s
+
+## [04] 3. Logs since boot, or the last minutes
+$ journalctl -b -u hello-app --no-pager | head -4
+Nov 21 23:17:51 demo systemd[1]: Started hello-app.service - Hello demo app.
+Nov 21 23:17:51 demo hello-app[108]: hello-app starting
+Nov 21 23:17:51 demo hello-app[108]: tick 23:17:51
+Nov 21 23:17:53 demo hello-app[108]: tick 23:17:53
+[exit 0 — OK]
+
+$ journalctl --since "10 min ago" -p err --no-pager
+Nov 21 23:17:55 demo (ort-tool)[131]: report.service: Failed at step EXEC spawning /usr/local/bin/report-tool: No such file or directory
+Nov 21 23:17:55 demo systemd[1]: Failed to start report.service - Report job (broken on purpose).
+[exit 0 — OK]
+
+# czas rozdziału: 1.8 s
+
+## [05] 4. Follow logs live
+$ timeout 5 journalctl -u hello-app -f --no-pager -n 1
+Nov 21 23:17:57 demo hello-app[108]: tick 23:17:57
+Nov 21 23:17:59 demo hello-app[108]: tick 23:17:59
+Nov 21 23:18:01 demo hello-app[108]: tick 23:18:01
+Nov 21 23:18:03 demo hello-app[108]: tick 23:18:03
+[exit 124 — OK (oczekiwany ≠0)]
+
+# czas rozdziału: 6.4 s
+
+## [06] 5. start vs enable
+$ systemctl is-enabled hello-app
+disabled
+[exit 1 — OK (oczekiwany ≠0)]
+
+$ systemctl stop hello-app && systemctl enable hello-app
+Created symlink '/etc/systemd/system/multi-user.target.wants/hello-app.service' → '/etc/systemd/system/hello-app.service'.
+[exit 0 — OK]
+
+$ systemctl is-active hello-app
+inactive
+[exit 3 — OK (oczekiwany ≠0)]
+
+$ systemctl enable --now hello-app && systemctl is-active hello-app && systemctl is-enabled hello-app
+active
+enabled
+[exit 0 — OK]
+
+# czas rozdziału: 2.6 s
+
+## [07] Quick check
+$ systemctl is-enabled hello-app && systemctl is-active hello-app
+enabled
+active
+[exit 0 — OK]
+
+$ journalctl -b -u hello-app --no-pager | head -2
+Nov 21 23:17:51 demo systemd[1]: Started hello-app.service - Hello demo app.
+Nov 21 23:17:51 demo hello-app[108]: hello-app starting
+[exit 0 — OK]
+
+# czas rozdziału: 1.5 s
+
+# PODSUMOWANIE: 17 poleceń, błędów: 0

@@ -1,0 +1,117 @@
+# polecenia.log — curl for APIs: headers, JSON bodies, timings, cookies, and the status code trap in scripts
+# obraz: localhost/shellproven-curl-api:13 (sha256:990bf7888977d4dbc34edee6c8bedb74e5018dfd3d3d2a9a407439782fdc6c41), Debian 13.7, uruchomiono 2026-11-21T22:53:01Z
+# wersje: curl 8.14.1 (x86_64-pc-linux-gnu) libcurl/8.14.1 OpenSSL/3.5.7 zlib/1.3.1 brotli/1.1.0 zstd/1.5.7 libidn2/2.3.8 libpsl/0.21.2 libssh2/1.11.1 nghttp2/1.64.0 nghttp3/1.8.0 librtmp/2.3 OpenLDAP/2.6.10 | Python 3.13.5
+# pakiety doinstalowane z repozytorium Debiana: curl python3
+# katalog roboczy: /lab/api; każdy rozdział = osobna powłoka (bash --norc), jak w nagraniu
+# '%' = przygotowanie (w filmie ukryte), '$' = polecenie pokazane w filmie
+
+## [02] Status codes and the exit code trap
+% echo IyEvdXNyL2Jpbi9lbnYgcHl0aG9uMwoiIiJMb2NhbCB0ZXN0IEFQSSBmb3IgdGhlIGN1cmwgbGVzc29uIChydW5zIG9ubHkgaW5zaWRlIHRoZSBkZW1vIGNvbnRhaW5lciwgcG9ydCA4MDAwKS4gTm8gZXh0ZXJuYWwgc2VydmljZXMuIiIiCmltcG9ydCBqc29uLCB0aW1lCmZyb20gaHR0cC5zZXJ2ZXIgaW1wb3J0IEJhc2VIVFRQUmVxdWVzdEhhbmRsZXIsIEhUVFBTZXJ2ZXIKCklURU1TID0gW3siaWQiOiAxLCAibmFtZSI6ICJrZXlib2FyZCJ9LCB7ImlkIjogMiwgIm5hbWUiOiAibW9uaXRvciJ9XQoKCmNsYXNzIEgoQmFzZUhUVFBSZXF1ZXN0SGFuZGxlcik6CiAgICBkZWYgc2VuZChzZWxmLCBjb2RlLCBvYmosIGV4dHJhPU5vbmUpOgogICAgICAgIGJvZHkgPSAoanNvbi5kdW1wcyhvYmopICsgIlxuIikuZW5jb2RlKCkKICAgICAgICBzZWxmLnNlbmRfcmVzcG9uc2UoY29kZSkKICAgICAgICBzZWxmLnNlbmRfaGVhZGVyKCJDb250ZW50LVR5cGUiLCAiYXBwbGljYXRpb24vanNvbiIpCiAgICAgICAgc2VsZi5zZW5kX2hlYWRlcigiQ29udGVudC1MZW5ndGgiLCBzdHIobGVuKGJvZHkpKSkKICAgICAgICBmb3IgaywgdiBpbiAoZXh0cmEgb3Ige30pLml0ZW1zKCk6IHNlbGYuc2VuZF9oZWFkZXIoaywgdikKICAgICAgICBzZWxmLmVuZF9oZWFkZXJzKCk7IHNlbGYud2ZpbGUud3JpdGUoYm9keSkKCiAgICBkZWYgbG9nX21lc3NhZ2Uoc2VsZiwgKmEpOiBwYXNzCgogICAgZGVmIGRvX0dFVChzZWxmKToKICAgICAgICBpZiBzZWxmLnBhdGggPT0gIi9oZWFsdGgiOiByZXR1cm4gc2VsZi5zZW5kKDIwMCwgeyJzdGF0dXMiOiAib2sifSkKICAgICAgICBpZiBzZWxmLnBhdGggPT0gIi9zbG93IjogdGltZS5zbGVlcCgwLjQpOyByZXR1cm4gc2VsZi5zZW5kKDIwMCwgeyJzdGF0dXMiOiAib2siLCAic2xvdyI6IFRydWV9KQogICAgICAgIGlmIHNlbGYucGF0aCA9PSAiL2FwaS9pdGVtcyI6CiAgICAgICAgICAgIGlmIHNlbGYuaGVhZGVycy5nZXQoIkF1dGhvcml6YXRpb24iKSAhPSAiQmVhcmVyIGRlbW8tdG9rZW4iOiByZXR1cm4gc2VsZi5zZW5kKDQwMSwgeyJlcnJvciI6ICJtaXNzaW5nIG9yIHdyb25nIHRva2VuIn0pCiAgICAgICAgICAgIHJldHVybiBzZWxmLnNlbmQoMjAwLCBJVEVNUykKICAgICAgICBpZiBzZWxmLnBhdGggPT0gIi9tZSI6CiAgICAgICAgICAgIGlmICJzZXNzaW9uPWFiYzEyMyIgbm90IGluIChzZWxmLmhlYWRlcnMuZ2V0KCJDb29raWUiKSBvciAiIik6IHJldHVybiBzZWxmLnNlbmQoNDAxLCB7ImVycm9yIjogIm5vdCBsb2dnZWQgaW4ifSkKICAgICAgICAgICAgcmV0dXJuIHNlbGYuc2VuZCgyMDAsIHsidXNlciI6ICJkZW1vIn0pCiAgICAgICAgcmV0dXJuIHNlbGYuc2VuZCg0MDQsIHsiZXJyb3IiOiAibm90IGZvdW5kIn0pCgogICAgZGVmIGRvX1BPU1Qoc2VsZik6CiAgICAgICAgbiA9IGludChzZWxmLmhlYWRlcnMuZ2V0KCJDb250ZW50LUxlbmd0aCIpIG9yIDApOyByYXcgPSBzZWxmLnJmaWxlLnJlYWQobikKICAgICAgICBpZiBzZWxmLnBhdGggPT0gIi9sb2dpbiI6IHJldHVybiBzZWxmLnNlbmQoMjAwLCB7ImxvZ2dlZF9pbiI6IFRydWV9LCB7IlNldC1Db29raWUiOiAic2Vzc2lvbj1hYmMxMjM7IFBhdGg9LzsgSHR0cE9ubHkifSkKICAgICAgICBpZiBzZWxmLnBhdGggPT0gIi9hcGkvaXRlbXMiOgogICAgICAgICAgICBpZiBzZWxmLmhlYWRlcnMuZ2V0KCJDb250ZW50LVR5cGUiLCAiIikuc3BsaXQoIjsiKVswXSAhPSAiYXBwbGljYXRpb24vanNvbiI6CiAgICAgICAgICAgICAgICByZXR1cm4gc2VsZi5zZW5kKDQxNSwgeyJlcnJvciI6ICJleHBlY3RlZCBDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL2pzb24ifSkKICAgICAgICAgICAgdHJ5OiBkYXRhID0ganNvbi5sb2FkcyhyYXcpCiAgICAgICAgICAgIGV4Y2VwdCBWYWx1ZUVycm9yOiByZXR1cm4gc2VsZi5zZW5kKDQwMCwgeyJlcnJvciI6ICJpbnZhbGlkIEpTT04ifSkKICAgICAgICAgICAgaXRlbSA9IHsiaWQiOiBsZW4oSVRFTVMpICsgMSwgIm5hbWUiOiBkYXRhLmdldCgibmFtZSIpfTsgSVRFTVMuYXBwZW5kKGl0ZW0pCiAgICAgICAgICAgIHJldHVybiBzZWxmLnNlbmQoMjAxLCBpdGVtKQogICAgICAgIHJldHVybiBzZWxmLnNlbmQoNDA0LCB7ImVycm9yIjogIm5vdCBmb3VuZCJ9KQoKCkhUVFBTZXJ2ZXIoKCIxMjcuMC4wLjEiLCA4MDAwKSwgSCkuc2VydmVfZm9yZXZlcigpCg== | base64 -d > /opt/api.py
+[exit 0 — OK]
+
+% (setsid python3 /opt/api.py >/dev/null 2>&1 &); sleep 1
+[exit 0 — OK]
+
+$ curl -s http://localhost:8000/health
+{"status": "ok"}
+[exit 0 — OK]
+
+$ curl -si http://localhost:8000/health
+HTTP/1.0 200 OK
+Server: BaseHTTP/0.6 Python/3.13.5
+Date: Sat, 21 Nov 2026 22:53:04 GMT
+Content-Type: application/json
+Content-Length: 17
+
+{"status": "ok"}
+[exit 0 — OK]
+
+$ curl -s http://localhost:8000/nope; echo "curl exit code: $?"
+{"error": "not found"}
+curl exit code: 0
+[exit 0 — OK]
+
+$ curl -sf http://localhost:8000/nope; echo "curl exit code: $?"
+curl exit code: 22
+[exit 0 — OK]
+
+# czas rozdziału: 2.5 s
+
+## [03] Send a header
+$ curl -s -w ' -> %{http_code}\n' http://localhost:8000/api/items
+{"error": "missing or wrong token"}
+ -> 401
+[exit 0 — OK]
+
+$ curl -s -H "Authorization: Bearer demo-token" http://localhost:8000/api/items
+[{"id": 1, "name": "keyboard"}, {"id": 2, "name": "monitor"}]
+[exit 0 — OK]
+
+# czas rozdziału: 2.0 s
+
+## [04] POST a JSON body
+$ curl -s -w ' -> %{http_code}\n' -d '{"name":"cable"}' http://localhost:8000/api/items
+{"error": "expected Content-Type: application/json"}
+ -> 415
+[exit 0 — OK]
+
+$ curl -s -w ' -> %{http_code}\n' -H 'Content-Type: application/json' -d '{"name":"cable"}' http://localhost:8000/api/items
+{"id": 3, "name": "cable"}
+ -> 201
+[exit 0 — OK]
+
+$ curl -s -w ' -> %{http_code}\n' --json '{"name":"mouse"}' http://localhost:8000/api/items
+{"id": 4, "name": "mouse"}
+ -> 201
+[exit 0 — OK]
+
+# czas rozdziału: 2.3 s
+
+## [05] Timings with -w
+$ curl -s -o /dev/null -w 'status %{http_code}, connect %{time_connect}s, total %{time_total}s\n' http://localhost:8000/slow
+status 200, connect 0.000184s, total 0.401015s
+[exit 0 — OK]
+
+# czas rozdziału: 2.6 s
+
+## [06] Keep a session with cookies
+$ curl -s -c cookies.txt -X POST http://localhost:8000/login
+{"logged_in": true}
+[exit 0 — OK]
+
+$ curl -s http://localhost:8000/me; curl -s -b cookies.txt http://localhost:8000/me
+{"error": "not logged in"}
+{"user": "demo"}
+[exit 0 — OK]
+
+# czas rozdziału: 1.7 s
+
+## [07] Check the status code in a script
+$ code=$(curl -s -o /tmp/body.json -w '%{http_code}' http://localhost:8000/nope); if [ "$code" != 200 ]; then echo "request failed with $code"; fi
+request failed with 404
+[exit 0 — OK]
+
+# czas rozdziału: 1.6 s
+
+## [08] Quick check
+$ curl -s http://localhost:8000/nope; echo "exit code: $?"
+{"error": "not found"}
+exit code: 0
+[exit 0 — OK]
+
+$ curl -sf http://localhost:8000/nope
+[exit 22 — OK (oczekiwany ≠0)]
+
+$ curl -s -w ' -> %{http_code}\n' -d '{"name":"x"}' http://localhost:8000/api/items
+{"error": "expected Content-Type: application/json"}
+ -> 415
+[exit 0 — OK]
+
+$ curl -s -w ' -> %{http_code}\n' --json '{"name":"x"}' http://localhost:8000/api/items
+{"id": 5, "name": "x"}
+ -> 201
+[exit 0 — OK]
+
+# czas rozdziału: 1.7 s
+
+# PODSUMOWANIE: 19 poleceń, błędów: 0

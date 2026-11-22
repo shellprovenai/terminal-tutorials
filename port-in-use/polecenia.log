@@ -1,0 +1,88 @@
+# polecenia.log — "Address already in use": find which process holds a port (ss, lsof, fuser) and free it
+# obraz: localhost/shellproven-port-in-use:13 (sha256:5f37db99aea3fa0e6c5f13c1022fb41a9b9969504c9c3ec89df98f7fe0e3d59f), Debian 13.7, uruchomiono 2026-11-21T21:31:46Z
+# wersje: ss utility, iproute2-6.15.0 |     revision: 4.99.4 | fuser (PSmisc) 23.7 | socat version 1.8.0.3 on 03 Sep 2026 20:58:48
+# pakiety doinstalowane z repozytorium Debiana: iproute2 lsof psmisc socat procps
+# katalog roboczy: /lab/net; każdy rozdział = osobna powłoka (bash --norc), jak w nagraniu
+# '%' = przygotowanie (w filmie ukryte), '$' = polecenie pokazane w filmie
+
+## [02] The error
+% (setsid socat TCP-LISTEN:8080,fork SYSTEM:'echo hello' >/dev/null 2>&1 &); sleep 1
+[exit 0 — OK]
+
+$ socat TCP-LISTEN:8080 -
+2026/11/21 21:31:49 socat[45] E bind(5, {AF=2 0.0.0.0:8080}, 16): Address already in use
+[exit 1 — OK (oczekiwany ≠0)]
+
+# czas rozdziału: 2.6 s
+
+## [03] ss: who is listening
+$ ss -ltnp
+State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess                       
+LISTEN 0      5            0.0.0.0:8080      0.0.0.0:*    users:(("socat",pid=43,fd=5))
+[exit 0 — OK]
+
+$ ss -ltnp 'sport = :8080'
+State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess                       
+LISTEN 0      5            0.0.0.0:8080      0.0.0.0:*    users:(("socat",pid=43,fd=5))
+[exit 0 — OK]
+
+# czas rozdziału: 1.5 s
+
+## [04] lsof and fuser
+$ lsof -i :8080
+COMMAND PID USER FD   TYPE  DEVICE SIZE/OFF NODE NAME
+socat    43 root 5u  IPv4 1034843      0t0  TCP *:8080 (LISTEN)
+[exit 0 — OK]
+
+$ fuser 8080/tcp
+8080/tcp:               43
+[exit 0 — OK]
+
+$ lsof -t -i :8080
+43
+[exit 0 — OK]
+
+# czas rozdziału: 1.7 s
+
+## [05] Free the port with kill
+$ kill $(lsof -t -i :8080); sleep 0.5; ss -ltn 'sport = :8080'
+State Recv-Q Send-Q Local Address:Port Peer Address:Port
+[exit 0 — OK]
+
+$ (setsid socat TCP-LISTEN:8080,fork SYSTEM:'echo hello' >/dev/null 2>&1 &); sleep 1; ss -ltnp 'sport = :8080'
+State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess                       
+LISTEN 0      5            0.0.0.0:8080      0.0.0.0:*    users:(("socat",pid=94,fd=5))
+[exit 0 — OK]
+
+# czas rozdziału: 3.5 s
+
+## [06] The trap: fuser -k sends SIGKILL
+$ kill $(lsof -t -i :8080); sleep 0.5; (setsid sh -c 'socat TCP-LISTEN:8080,fork SYSTEM:true >/dev/null 2>&1; echo "exit status $?" > /tmp/exit.txt' &); sleep 1
+[exit 0 — OK]
+
+$ fuser -k 8080/tcp; sleep 1; cat /tmp/exit.txt
+8080/tcp:              114
+exit status 137
+[exit 0 — OK]
+
+$ (setsid sh -c 'socat TCP-LISTEN:8080,fork SYSTEM:true >/dev/null 2>&1; echo "exit status $?" > /tmp/exit.txt' &); sleep 1; fuser -k -TERM 8080/tcp; sleep 1; cat /tmp/exit.txt
+8080/tcp:              121
+exit status 143
+[exit 0 — OK]
+
+# czas rozdziału: 5.7 s
+
+## [07] Quick check
+$ (setsid socat TCP-LISTEN:8080,fork SYSTEM:'echo hello' >/dev/null 2>&1 &); sleep 1; ss -ltnp 'sport = :8080'
+State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess                        
+LISTEN 0      5            0.0.0.0:8080      0.0.0.0:*    users:(("socat",pid=139,fd=5))
+[exit 0 — OK]
+
+$ kill $(lsof -t -i :8080); sleep 0.5; (setsid sh -c 'socat TCP-LISTEN:8080,fork SYSTEM:true >/dev/null 2>&1; echo "exit status $?" > /tmp/exit.txt' &); sleep 1; fuser -k 8080/tcp; sleep 1; cat /tmp/exit.txt
+8080/tcp:              147
+exit status 137
+[exit 0 — OK]
+
+# czas rozdziału: 4.8 s
+
+# PODSUMOWANIE: 14 poleceń, błędów: 0
