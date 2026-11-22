@@ -1,6 +1,6 @@
 # SSH tunnels for your own server: -L, -R and -D, reach a database that only listens on localhost
 
-> 🎬 Video: premieres on [youtube.com/@ShellProven](https://www.youtube.com/@ShellProven) (direct link added on release).
+> 🎬 Video: https://youtu.be/s-pdnRR4V9s (public from Dec 4, 2026)
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 

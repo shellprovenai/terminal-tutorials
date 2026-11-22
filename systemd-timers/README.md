@@ -1,6 +1,6 @@
 # systemd timers instead of cron: schedule a job, check the next run, read its logs
 
-> 🎬 Video: premieres on [youtube.com/@ShellProven](https://www.youtube.com/@ShellProven) (direct link added on release).
+> 🎬 Video: https://youtu.be/CgcvFj96twM (public from Dec 7, 2026)
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 

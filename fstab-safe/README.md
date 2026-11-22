@@ -1,6 +1,6 @@
 # Partitions and /etc/fstab without breaking boot: lsblk, UUIDs, nofail and findmnt --verify
 
-> 🎬 Video: premieres on [youtube.com/@ShellProven](https://www.youtube.com/@ShellProven) (direct link added on release).
+> 🎬 Video: https://youtu.be/nH99IBoLx-I (public from Dec 9, 2026)
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 

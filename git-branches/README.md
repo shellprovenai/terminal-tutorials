@@ -1,6 +1,6 @@
 # Git branches without fear: create, switch, merge, delete, and recover a deleted branch
 
-> 🎬 Video: premieres on [youtube.com/@ShellProven](https://www.youtube.com/@ShellProven) (direct link added on release).
+> 🎬 Video: https://youtu.be/rG944XI3pBk (public from Nov 30, 2026)
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 

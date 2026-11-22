@@ -1,6 +1,6 @@
 # A shared folder two users can both edit: groups, setgid and umask (without chmod 777)
 
-> 🎬 Video: premieres on [youtube.com/@ShellProven](https://www.youtube.com/@ShellProven) (direct link added on release).
+> 🎬 Video: https://youtu.be/yQegSsXZw_w (public from Dec 5, 2026)
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 

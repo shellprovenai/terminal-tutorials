@@ -1,6 +1,6 @@
 # Bash scripts that don't destroy things: set -euo pipefail, quoting, [[ ]] and ${VAR:?}
 
-> 🎬 Video: premieres on [youtube.com/@ShellProven](https://www.youtube.com/@ShellProven) (direct link added on release).
+> 🎬 Video: https://youtu.be/kxhpskLJ91g (public from Dec 12, 2026)
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 

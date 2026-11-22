@@ -1,6 +1,6 @@
 # sort, uniq -c, cut and tr: the text toolbox for logs and CSV files (and their traps)
 
-> 🎬 Video: premieres on [youtube.com/@ShellProven](https://www.youtube.com/@ShellProven) (direct link added on release).
+> 🎬 Video: https://youtu.be/HAuhDdRSEKU (public from Dec 11, 2026)
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 

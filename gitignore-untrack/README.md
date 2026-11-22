@@ -1,6 +1,6 @@
 # .gitignore not working? Untrack files that are already committed (git rm --cached)
 
-> 🎬 Video: premieres on [youtube.com/@ShellProven](https://www.youtube.com/@ShellProven) (direct link added on release).
+> 🎬 Video: https://youtu.be/eFFnLC99j7o (public from Dec 2, 2026)
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 
