@@ -1,6 +1,6 @@
 # .bashrc vs .profile vs .bash_profile: why your alias works in one terminal and not the other
 
-> 🎬 Video: premieres on [youtube.com/@ShellProven](https://www.youtube.com/@ShellProven) (direct link added on release).
+> 🎬 Video: https://youtu.be/MIiZMT6JqLU (public from Nov 25, 2026)
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 

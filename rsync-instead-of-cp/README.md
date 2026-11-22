@@ -1,6 +1,6 @@
 # rsync instead of cp: copy only what changed, dry-run first, and the trailing-slash trap
 
-> 🎬 Video: premieres on [youtube.com/@ShellProven](https://www.youtube.com/@ShellProven) (direct link added on release).
+> 🎬 Video: https://youtu.be/3YrSm6wADKw (public from Nov 23, 2026)
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 

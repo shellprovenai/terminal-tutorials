@@ -1,6 +1,6 @@
 # sed for the three things you actually need: replace in place, delete lines, print a range
 
-> 🎬 Video: premieres on [youtube.com/@ShellProven](https://www.youtube.com/@ShellProven) (direct link added on release).
+> 🎬 Video: https://youtu.be/7sh0yrV5oSM (public from Nov 26, 2026)
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 

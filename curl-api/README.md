@@ -1,6 +1,6 @@
 # curl for APIs: headers, JSON bodies, timings, cookies, and the status code trap in scripts
 
-> 🎬 Video: premieres on [youtube.com/@ShellProven](https://www.youtube.com/@ShellProven) (direct link added on release).
+> 🎬 Video: https://youtu.be/fttnDWjk6cY (public from Nov 27, 2026)
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 

@@ -1,6 +1,6 @@
 # What's eating your CPU? Find it with ps and top, and stop it safely (SIGTERM vs SIGKILL)
 
-> 🎬 Video: premieres on [youtube.com/@ShellProven](https://www.youtube.com/@ShellProven) (direct link added on release).
+> 🎬 Video: https://youtu.be/p-A9XZask4w (public from Nov 24, 2026)
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 

@@ -1,6 +1,6 @@
 # tar and gzip without the usual mistakes: back up a folder, skip the junk, verify the archive
 
-> 🎬 Video: premieres on [youtube.com/@ShellProven](https://www.youtube.com/@ShellProven) (direct link added on release).
+> 🎬 Video: https://youtu.be/qmOhkBLBX7k (public from Nov 23, 2026)
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 
