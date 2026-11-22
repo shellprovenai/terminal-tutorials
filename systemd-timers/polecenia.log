@@ -1,0 +1,138 @@
+# polecenia.log — systemd timers instead of cron: schedule a job, check the next run, read its logs
+# obraz: localhost/shellproven-systemd-timers:13 (sha256:13284335e873c05e1350b0d15b633649524b96ef387e3aa30f8a6533d5dc5187), Debian 13.7, uruchomiono 2026-11-22T01:38:37Z
+# wersje: systemd 257 (257.13-1~deb13u1)
+# pakiety doinstalowane z repozytorium Debiana: systemd systemd-sysv dbus
+# katalog roboczy: /root; każdy rozdział = osobna powłoka (bash --norc), jak w nagraniu
+# '%' = przygotowanie (w filmie ukryte), '$' = polecenie pokazane w filmie
+
+## [02] A job as a oneshot service
+% printf '#!/bin/sh\necho "report generated at $(date +%%T)" >> /var/log/report.log\necho "report OK"\n' > /usr/local/bin/make-report && chmod +x /usr/local/bin/make-report
+[exit 0 — OK]
+
+% printf '[Unit]\nDescription=Generate the report\n\n[Service]\nType=oneshot\nExecStart=/usr/local/bin/make-report\n' > /etc/systemd/system/report.service
+[exit 0 — OK]
+
+% printf '[Unit]\nDescription=Run the report every 10 seconds (demo)\n\n[Timer]\nOnCalendar=*:*:0/10\nAccuracySec=1s\nPersistent=true\n\n[Install]\nWantedBy=timers.target\n' > /etc/systemd/system/report.timer
+[exit 0 — OK]
+
+% systemctl daemon-reload
+[exit 0 — OK]
+
+$ systemctl cat report.service --no-pager
+# /etc/systemd/system/report.service
+[Unit]
+Description=Generate the report
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/make-report
+[exit 0 — OK]
+
+$ systemctl start report.service && journalctl -u report.service --no-pager -n 4
+Nov 22 01:38:38 demo systemd[1]: Starting report.service - Generate the report...
+Nov 22 01:38:38 demo make-report[103]: report OK
+Nov 22 01:38:38 demo systemd[1]: report.service: Deactivated successfully.
+Nov 22 01:38:38 demo systemd[1]: Finished report.service - Generate the report.
+[exit 0 — OK]
+
+# czas rozdziału: 1.3 s
+
+## [03] The timer
+$ systemctl cat report.timer --no-pager
+# /etc/systemd/system/report.timer
+[Unit]
+Description=Run the report every 10 seconds (demo)
+
+[Timer]
+OnCalendar=*:*:0/10
+AccuracySec=1s
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+[exit 0 — OK]
+
+$ systemctl enable --now report.timer
+Created symlink '/etc/systemd/system/timers.target.wants/report.timer' → '/etc/systemd/system/report.timer'.
+[exit 0 — OK]
+
+# czas rozdziału: 1.8 s
+
+## [04] When does it run next?
+$ systemctl list-timers report.timer --no-pager
+NEXT                        LEFT LAST PASSED UNIT         ACTIVATES
+Sun 2026-11-22 01:38:50 UTC   8s -         - report.timer report.service
+
+1 timers listed.
+Pass --all to see loaded but inactive timers, too.
+[exit 0 — OK]
+
+# czas rozdziału: 1.3 s
+
+## [05] Every run is in the journal
+$ sleep 15; journalctl -u report.service --no-pager -n 6
+Nov 22 01:38:38 demo systemd[1]: report.service: Deactivated successfully.
+Nov 22 01:38:38 demo systemd[1]: Finished report.service - Generate the report.
+Nov 22 01:38:50 demo systemd[1]: Starting report.service - Generate the report...
+Nov 22 01:38:50 demo make-report[167]: report OK
+Nov 22 01:38:50 demo systemd[1]: report.service: Deactivated successfully.
+Nov 22 01:38:50 demo systemd[1]: Finished report.service - Generate the report.
+[exit 0 — OK]
+
+$ tail -n 3 /var/log/report.log
+report generated at 01:38:38
+report generated at 01:38:50
+[exit 0 — OK]
+
+# czas rozdziału: 16.1 s
+
+## [06] Test a schedule with systemd-analyze calendar
+$ systemd-analyze calendar "Mon..Fri 02:30" --iterations=3
+  Original form: Mon..Fri 02:30
+Normalized form: Mon..Fri *-*-* 02:30:00
+    Next elapse: Mon 2026-11-23 02:30:00 UTC
+       From now: 24h left
+   Iteration #2: Tue 2026-11-24 02:30:00 UTC
+       From now: 2 days left
+   Iteration #3: Wed 2026-11-25 02:30:00 UTC
+       From now: 3 days left
+[exit 0 — OK]
+
+$ systemd-analyze calendar daily
+  Original form: daily
+Normalized form: *-*-* 00:00:00
+    Next elapse: Mon 2026-11-23 00:00:00 UTC
+       From now: 22h left
+[exit 0 — OK]
+
+# czas rozdziału: 1.3 s
+
+## [07] The trap: edited timer, old schedule
+$ sed -i 's|0/10|0/30|' /etc/systemd/system/report.timer && systemctl restart report.timer 2>&1 | head -2
+Warning: The unit file, source configuration file or drop-ins of report.timer changed on disk. Run 'systemctl daemon-reload' to reload units.
+[exit 0 — OK]
+
+$ systemctl show report.timer -p TimersCalendar
+TimersCalendar={ OnCalendar=*-*-* *:*:00/10 ; next_elapse=Sun 2026-11-22 01:39:10 UTC }
+[exit 0 — OK]
+
+$ systemctl daemon-reload && systemctl restart report.timer && systemctl show report.timer -p TimersCalendar
+TimersCalendar={ OnCalendar=*-*-* *:*:00/30 ; next_elapse=Sun 2026-11-22 01:39:30 UTC }
+[exit 0 — OK]
+
+# czas rozdziału: 1.1 s
+
+## [08] Quick check
+$ systemctl list-timers report.timer --no-pager | head -2
+NEXT                        LEFT LAST                        PASSED UNIT         ACTIVATES
+Sun 2026-11-22 01:39:30 UTC  28s Sun 2026-11-22 01:39:00 UTC 1s ago report.timer report.service
+[exit 0 — OK]
+
+$ sed -i 's|0/30|0/20|' /etc/systemd/system/report.timer && systemctl show report.timer -p NeedDaemonReload && systemctl daemon-reload && systemctl show report.timer -p NeedDaemonReload
+NeedDaemonReload=yes
+NeedDaemonReload=no
+[exit 0 — OK]
+
+# czas rozdziału: 1.2 s
+
+# PODSUMOWANIE: 18 poleceń, błędów: 0

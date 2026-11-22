@@ -1,0 +1,103 @@
+# polecenia.log — A shared folder two users can both edit: groups, setgid and umask (without chmod 777)
+# obraz: docker.io/library/debian:13 (sha256:bfc36aecdece0387418759dba474aa856c026ca8087da3606b41b90ab0509c99), Debian 13.7, uruchomiono 2026-11-22T00:51:17Z
+# wersje: stat (GNU coreutils) 9.7
+# pakiety doinstalowane z repozytorium Debiana: (brak)
+# katalog roboczy: /srv; każdy rozdział = osobna powłoka (bash --norc), jak w nagraniu
+# '%' = przygotowanie (w filmie ukryte), '$' = polecenie pokazane w filmie
+
+## [02] The problem
+% groupadd web && useradd -m -s /bin/bash -G web alice && useradd -m -s /bin/bash -G web bob && mkdir -p /srv/site
+[exit 0 — OK]
+
+$ chown alice /srv/site && su alice -c 'echo "<h1>Home</h1>" > /srv/site/index.html' && ls -l /srv/site
+total 4
+-rw-rw-r-- 1 alice alice 14 Nov 22 00:51 index.html
+[exit 0 — OK]
+
+$ su bob -c 'echo "<p>news</p>" >> /srv/site/index.html'
+bash: line 1: /srv/site/index.html: Permission denied
+[exit 1 — OK (oczekiwany ≠0)]
+
+# czas rozdziału: 4.0 s
+
+## [03] Step 1: a shared group on the folder
+$ chgrp web /srv/site && chmod 775 /srv/site && ls -ld /srv/site
+drwxrwxr-x 2 alice web 4096 Nov 22 00:51 /srv/site
+[exit 0 — OK]
+
+$ su alice -c 'touch /srv/site/about.html' && ls -l /srv/site/about.html
+-rw-rw-r-- 1 alice alice 0 Nov 22 00:51 /srv/site/about.html
+[exit 0 — OK]
+
+# czas rozdziału: 1.6 s
+
+## [04] Step 2: setgid, new files inherit the group
+$ chmod 2775 /srv/site && ls -ld /srv/site
+drwxrwsr-x 2 alice web 4096 Nov 22 00:51 /srv/site
+[exit 0 — OK]
+
+$ su alice -c 'touch /srv/site/contact.html' && ls -l /srv/site/contact.html
+-rw-rw-r-- 1 alice web 0 Nov 22 00:51 /srv/site/contact.html
+[exit 0 — OK]
+
+# czas rozdziału: 2.1 s
+
+## [05] Step 3: umask, so the group can write
+$ su alice -c umask; umask
+0002
+0022
+[exit 0 — OK]
+
+$ su alice -c 'umask 022 && touch /srv/site/blog.html' && ls -l /srv/site/blog.html
+-rw-r--r-- 1 alice web 0 Nov 22 00:51 /srv/site/blog.html
+[exit 0 — OK]
+
+$ su bob -c 'echo "<p>first post</p>" >> /srv/site/blog.html'
+bash: line 1: /srv/site/blog.html: Permission denied
+[exit 1 — OK (oczekiwany ≠0)]
+
+$ su alice -c 'umask 002 && touch /srv/site/news.html' && su bob -c 'echo "<p>first post</p>" >> /srv/site/news.html' && ls -l /srv/site/news.html
+-rw-rw-r-- 1 alice web 18 Nov 22 00:51 /srv/site/news.html
+[exit 0 — OK]
+
+# czas rozdziału: 1.6 s
+
+## [06] Fix the files that already exist
+$ chgrp -R web /srv/site && find /srv/site -type d -exec chmod 2775 {} + && find /srv/site -type f -exec chmod 664 {} + && ls -l /srv/site
+total 8
+-rw-rw-r-- 1 alice web  0 Nov 22 00:51 about.html
+-rw-rw-r-- 1 alice web  0 Nov 22 00:51 blog.html
+-rw-rw-r-- 1 alice web  0 Nov 22 00:51 contact.html
+-rw-rw-r-- 1 alice web 14 Nov 22 00:51 index.html
+-rw-rw-r-- 1 alice web 18 Nov 22 00:51 news.html
+[exit 0 — OK]
+
+# czas rozdziału: 1.5 s
+
+## [07] The trap: mv keeps the old group
+$ su alice -c 'umask 002 && echo "draft" > ~/faq.html && mv ~/faq.html /srv/site/' && ls -l /srv/site/faq.html
+-rw-rw-r-- 1 alice alice 6 Nov 22 00:51 /srv/site/faq.html
+[exit 0 — OK]
+
+$ su bob -c 'echo "edit" >> /srv/site/faq.html'
+bash: line 1: /srv/site/faq.html: Permission denied
+[exit 1 — OK (oczekiwany ≠0)]
+
+$ chgrp web /srv/site/faq.html && su bob -c 'echo "edit" >> /srv/site/faq.html' && ls -l /srv/site/faq.html
+-rw-rw-r-- 1 alice web 11 Nov 22 00:51 /srv/site/faq.html
+[exit 0 — OK]
+
+# czas rozdziału: 1.6 s
+
+## [08] Quick check
+$ su bob -c 'umask 002 && touch /srv/site/quiz.html' && stat -c '%G %A %n' /srv/site/quiz.html
+web -rw-rw-r-- /srv/site/quiz.html
+[exit 0 — OK]
+
+$ su alice -c 'echo x > ~/q.html && mv ~/q.html /srv/site/' && stat -c '%G %n' /srv/site/q.html
+alice /srv/site/q.html
+[exit 0 — OK]
+
+# czas rozdziału: 1.8 s
+
+# PODSUMOWANIE: 17 poleceń, błędów: 0

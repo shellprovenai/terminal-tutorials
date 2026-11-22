@@ -1,0 +1,74 @@
+# polecenia.log — Partitions and /etc/fstab without breaking boot: lsblk, UUIDs, nofail and findmnt --verify
+# obraz: localhost/shellproven-fstab-safe:13 (sha256:3b10fcd18890ed46c9fe2ae5d1457cf67be9382b525249b7e55d5e79873ad7ab), Debian 13.7, uruchomiono 2026-11-22T01:05:18Z
+# wersje: findmnt from util-linux 2.41.5 | sfdisk from util-linux 2.41.5
+# pakiety doinstalowane z repozytorium Debiana: fdisk e2fsprogs util-linux
+# katalog roboczy: /lab/disk; każdy rozdział = osobna powłoka (bash --norc), jak w nagraniu
+# '%' = przygotowanie (w filmie ukryte), '$' = polecenie pokazane w filmie
+
+## [02] See disks and partitions: lsblk
+$ lsblk -o NAME,SIZE,TYPE
+NAME     SIZE TYPE
+vda       60G disk
+|-vda1  59.9G part
+|-vda14    3M part
+`-vda15  124M part
+[exit 0 — OK]
+
+# czas rozdziału: 3.0 s
+
+## [03] Practise partitioning on an image file
+$ truncate -s 300M disk.img && ls -lh disk.img
+-rw-r--r-- 1 root root 300M Nov 22 01:05 disk.img
+[exit 0 — OK]
+
+$ printf 'label: gpt\n,100M,L\n,,L\n' | sfdisk -q disk.img && sfdisk -l disk.img | tail -3
+Device      Start    End Sectors  Size Type
+disk.img1    2048 206847  204800  100M Linux filesystem
+disk.img2  206848 612351  405504  198M Linux filesystem
+[exit 0 — OK]
+
+# czas rozdziału: 2.7 s
+
+## [04] A file system and its UUID
+$ for n in data backup; do truncate -s 64M $n.img && mkfs.ext4 -q -F -L $n $n.img; done && blkid data.img backup.img
+data.img: LABEL="data" UUID="f2a66116-59af-44d2-9788-eb37bfdc2763" BLOCK_SIZE="1024" TYPE="ext4"
+backup.img: LABEL="backup" UUID="2f60b910-9797-4f14-bed0-7d7c85ab7c29" BLOCK_SIZE="1024" TYPE="ext4"
+[exit 0 — OK]
+
+# czas rozdziału: 4.7 s
+
+## [05] The fstab line
+$ mkdir -p /mnt/data /mnt/backup && printf 'UUID=%s /mnt/data ext4 defaults 0 2\nUUID=1234-dead /mnt/backup ext4 defaults 0 2\n' "$(blkid -s UUID -o value data.img)" > fstab.test && cat fstab.test
+UUID=f2a66116-59af-44d2-9788-eb37bfdc2763 /mnt/data ext4 defaults 0 2
+UUID=1234-dead /mnt/backup ext4 defaults 0 2
+[exit 0 — OK]
+
+# czas rozdziału: 2.0 s
+
+## [06] Check it before you reboot: findmnt --verify
+$ findmnt --verify --tab-file fstab.test
+
+0 parse errors, 1 error, 1 warning
+/mnt/data
+   [W] non-bind mount source /lab/disk/data.img is a directory or regular file
+/mnt/backup
+   [E] unreachable on boot required source: UUID=1234-dead
+[exit 1 — OK (oczekiwany ≠0)]
+
+$ sed -i "s/UUID=1234-dead/UUID=$(blkid -s UUID -o value backup.img)/" fstab.test && findmnt --verify --tab-file fstab.test 2>&1 | head -1
+[exit 0 — OK]
+
+# czas rozdziału: 2.1 s
+
+## [07] Quick check
+$ blkid -s UUID -o value data.img
+f2a66116-59af-44d2-9788-eb37bfdc2763
+[exit 0 — OK]
+
+$ printf 'UUID=1234-dead /mnt/backup ext4 defaults 0 2\n' > quiz.fstab && findmnt --verify --tab-file quiz.fstab 2>&1 | tail -1
+   [E] unreachable on boot required source: UUID=1234-dead
+[exit 0 — OK]
+
+# czas rozdziału: 2.4 s
+
+# PODSUMOWANIE: 9 poleceń, błędów: 0

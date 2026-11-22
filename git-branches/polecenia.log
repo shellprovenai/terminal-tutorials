@@ -1,0 +1,115 @@
+# polecenia.log — Git branches without fear: create, switch, merge, delete, and recover a deleted branch
+# obraz: localhost/shellproven-git-branches:13 (sha256:723ff6992cd19901ddf48962b6835b7fa6aea9076ad7c2442beb299918e3d736), Debian 13.7, uruchomiono 2026-11-22T00:11:10Z
+# wersje: git version 2.47.3
+# pakiety doinstalowane z repozytorium Debiana: git
+# katalog roboczy: /lab/repo; każdy rozdział = osobna powłoka (bash --norc), jak w nagraniu
+# '%' = przygotowanie (w filmie ukryte), '$' = polecenie pokazane w filmie
+
+## [02] Create and switch: git switch -c
+% git init -q -b main && git config user.name Demo && git config user.email demo@example.com && git config --global color.ui false
+[exit 0 — OK]
+
+% echo "v1" > app.txt && git add . && git commit -qm "First version"
+[exit 0 — OK]
+
+$ git switch -c feature/login
+Switched to a new branch 'feature/login'
+[exit 0 — OK]
+
+$ echo "login form" > login.txt && git add login.txt && git commit -qm "Add login form" && git log --oneline --decorate --all --graph
+* f2ad00c (HEAD -> feature/login) Add login form
+* fcc1e4f (main) First version
+[exit 0 — OK]
+
+# czas rozdziału: 2.0 s
+
+## [03] Merge: fast-forward
+$ git switch main && git merge feature/login
+Switched to branch 'main'
+Updating fcc1e4f..f2ad00c
+Fast-forward
+ login.txt | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 100644 login.txt
+[exit 0 — OK]
+
+# czas rozdziału: 2.2 s
+
+## [04] Merge: a real merge commit
+$ git switch -c feature/search && echo "search box" > search.txt && git add . && git commit -qm "Add search box"
+Switched to a new branch 'feature/search'
+[exit 0 — OK]
+
+$ git switch main && echo "v2" > app.txt && git commit -qam "Update app to v2"
+Switched to branch 'main'
+[exit 0 — OK]
+
+$ git merge --no-edit feature/search && git log --oneline --decorate --graph
+Merge made by the 'ort' strategy.
+ search.txt | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 100644 search.txt
+*   eb7698e (HEAD -> main) Merge branch 'feature/search'
+|\  
+| * eeb4ef6 (feature/search) Add search box
+* | 747dc4d Update app to v2
+|/  
+* f2ad00c (feature/login) Add login form
+* fcc1e4f First version
+[exit 0 — OK]
+
+# czas rozdziału: 2.2 s
+
+## [05] Delete: -d refuses, -D forces
+$ git branch -d feature/login feature/search
+Deleted branch feature/login (was f2ad00c).
+Deleted branch feature/search (was eeb4ef6).
+[exit 0 — OK]
+
+$ git switch -c experiment && echo "risky idea" > idea.txt && git add . && git commit -qm "Try a new idea" && git switch main
+Switched to a new branch 'experiment'
+Switched to branch 'main'
+[exit 0 — OK]
+
+$ git branch -d experiment
+error: the branch 'experiment' is not fully merged
+hint: If you are sure you want to delete it, run 'git branch -D experiment'
+hint: Disable this message with "git config advice.forceDeleteBranch false"
+[exit 1 — OK (oczekiwany ≠0)]
+
+$ git branch -D experiment
+Deleted branch experiment (was 6cc69eb).
+[exit 0 — OK]
+
+# czas rozdziału: 1.9 s
+
+## [06] Recover a deleted branch with the reflog
+$ git log -g --oneline --grep="new idea"
+6cc69eb HEAD@{1}: commit: Try a new idea
+[exit 0 — OK]
+
+$ git branch experiment $(git log -g --format=%h --grep="new idea" -1) && git log --oneline experiment -2
+6cc69eb Try a new idea
+eb7698e Merge branch 'feature/search'
+[exit 0 — OK]
+
+# czas rozdziału: 2.0 s
+
+## [07] Quick check
+$ git switch -q -c quiz && echo q > q.txt && git add . && git commit -qm "Quiz commit" && git switch -q main
+[exit 0 — OK]
+
+$ git branch -d quiz
+error: the branch 'quiz' is not fully merged
+hint: If you are sure you want to delete it, run 'git branch -D quiz'
+hint: Disable this message with "git config advice.forceDeleteBranch false"
+[exit 1 — OK (oczekiwany ≠0)]
+
+$ git branch -D quiz && git branch quiz $(git log -g --format=%h --grep="Quiz commit" -1) && git branch --list quiz
+Deleted branch quiz (was cdea8ee).
+  quiz
+[exit 0 — OK]
+
+# czas rozdziału: 1.7 s
+
+# PODSUMOWANIE: 17 poleceń, błędów: 0

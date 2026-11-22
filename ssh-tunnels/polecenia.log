@@ -1,0 +1,101 @@
+# polecenia.log — SSH tunnels for your own server: -L, -R and -D, reach a database that only listens on localhost
+# obraz: localhost/shellproven-ssh-tunnels:13 (sha256:71bd742aca87e8831b29387ad991edf6666ca307ed6b123a03e6f984bb42c921), Debian 13.7, uruchomiono 2026-11-22T00:36:26Z
+# wersje: OpenSSH_10.0p2 Debian-7+deb13u4, OpenSSL 3.5.7 9 Jun 2026
+# pakiety doinstalowane z repozytorium Debiana: openssh-server openssh-client socat curl python3 iproute2 procps
+# katalog roboczy: /root; każdy rozdział = osobna powłoka (bash --norc), jak w nagraniu
+# '%' = przygotowanie (w filmie ukryte), '$' = polecenie pokazane w filmie
+
+## [02] A service that only listens on localhost
+% useradd -m -s /bin/bash deploy && mkdir -p /run/sshd && /usr/sbin/sshd
+[exit 0 — OK]
+
+% ssh-keygen -q -t ed25519 -f ~/.ssh/id_ed25519 -N "" && install -d -m 700 -o deploy -g deploy /home/deploy/.ssh && install -m 600 -o deploy -g deploy ~/.ssh/id_ed25519.pub /home/deploy/.ssh/authorized_keys
+[exit 0 — OK]
+
+% ssh -q -o StrictHostKeyChecking=accept-new deploy@localhost true
+[exit 0 — OK]
+
+% (setsid socat TCP-LISTEN:5432,bind=127.0.0.1,fork SYSTEM:'echo "db: hello from port 5432"' >/dev/null 2>&1 &); sleep 1
+[exit 0 — OK]
+
+$ ss -ltn 'sport = :5432'
+State  Recv-Q Send-Q Local Address:Port Peer Address:Port
+LISTEN 0      5          127.0.0.1:5432      0.0.0.0:*   
+[exit 0 — OK]
+
+# czas rozdziału: 3.8 s
+
+## [03] Local forward: ssh -L
+$ ssh -f -N -L 15432:localhost:5432 deploy@localhost && ss -ltn 'sport = :15432'
+State  Recv-Q Send-Q Local Address:Port  Peer Address:Port
+LISTEN 0      128        127.0.0.1:15432      0.0.0.0:*   
+LISTEN 0      128            [::1]:15432         [::]:*   
+[exit 0 — OK]
+
+$ socat - TCP:localhost:15432
+db: hello from port 5432
+[exit 0 — OK]
+
+$ pkill -f "ssh -f -N -L 15432" && sleep 0.5; ss -ltn 'sport = :15432'
+State Recv-Q Send-Q Local Address:Port Peer Address:Port
+[exit 0 — OK]
+
+# czas rozdziału: 2.3 s
+
+## [04] Reverse forward: ssh -R
+% mkdir -p /tmp/site && echo "preview of my local app" > /tmp/site/index.html && (setsid python3 -m http.server 8000 --bind 127.0.0.1 --directory /tmp/site >/dev/null 2>&1 &); sleep 1
+[exit 0 — OK]
+
+$ ssh -f -N -R 9000:localhost:8000 deploy@localhost && curl -s http://localhost:9000/
+preview of my local app
+[exit 0 — OK]
+
+$ ss -ltn 'sport = :9000'
+State  Recv-Q Send-Q Local Address:Port Peer Address:Port
+LISTEN 0      128        127.0.0.1:9000      0.0.0.0:*   
+LISTEN 0      128            [::1]:9000         [::]:*   
+[exit 0 — OK]
+
+$ pkill -f "ssh -f -N -R 9000"
+[exit 0 — OK]
+
+# czas rozdziału: 2.7 s
+
+## [05] SOCKS proxy: ssh -D
+$ ssh -f -N -D 1080 deploy@localhost && curl -s --socks5-hostname localhost:1080 http://localhost:8000/
+preview of my local app
+[exit 0 — OK]
+
+$ pkill -f "ssh -f -N -D 1080"
+[exit 0 — OK]
+
+# czas rozdziału: 2.7 s
+
+## [06] Make it permanent: LocalForward in ~/.ssh/config
+$ printf 'Host db-tunnel\n    HostName localhost\n    User deploy\n    LocalForward 15432 localhost:5432\n' >> ~/.ssh/config && chmod 600 ~/.ssh/config && cat ~/.ssh/config
+Host db-tunnel
+    HostName localhost
+    User deploy
+    LocalForward 15432 localhost:5432
+[exit 0 — OK]
+
+$ ssh -f -N db-tunnel && socat - TCP:localhost:15432
+db: hello from port 5432
+[exit 0 — OK]
+
+# czas rozdziału: 1.5 s
+
+## [07] Quick check
+$ socat - TCP:localhost:15432
+db: hello from port 5432
+[exit 0 — OK]
+
+$ ssh -f -N -R 9000:localhost:8000 deploy@localhost && sleep 1 && ss -ltn 'sport = :9000' && pkill -f "ssh -f -N -R 9000"
+State  Recv-Q Send-Q Local Address:Port Peer Address:Port
+LISTEN 0      128        127.0.0.1:9000      0.0.0.0:*   
+LISTEN 0      128            [::1]:9000         [::]:*   
+[exit 0 — OK]
+
+# czas rozdziału: 2.7 s
+
+# PODSUMOWANIE: 18 poleceń, błędów: 0

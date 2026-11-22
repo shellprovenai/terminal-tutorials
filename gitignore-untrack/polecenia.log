@@ -1,0 +1,106 @@
+# polecenia.log — .gitignore not working? Untrack files that are already committed (git rm --cached)
+# obraz: localhost/shellproven-gitignore-untrack:13 (sha256:723ff6992cd19901ddf48962b6835b7fa6aea9076ad7c2442beb299918e3d736), Debian 13.7, uruchomiono 2026-11-22T00:23:02Z
+# wersje: git version 2.47.3
+# pakiety doinstalowane z repozytorium Debiana: git
+# katalog roboczy: /lab/repo; każdy rozdział = osobna powłoka (bash --norc), jak w nagraniu
+# '%' = przygotowanie (w filmie ukryte), '$' = polecenie pokazane w filmie
+
+## [02] The problem
+% git init -q -b main && git config user.name Demo && git config user.email demo@example.com && git config --global color.ui false
+[exit 0 — OK]
+
+% mkdir -p logs build && echo "print('hi')" > app.py && echo "API_KEY=demo-secret-123" > .env && echo "started" > logs/app.log && echo "bin" > build/app.bin
+[exit 0 — OK]
+
+% git add . && git commit -qm "Initial commit" && git clone -q . /lab/teammate
+[exit 0 — OK]
+
+$ git ls-files
+.env
+app.py
+build/app.bin
+logs/app.log
+[exit 0 — OK]
+
+$ printf '.env\n*.log\nbuild/\n' > .gitignore && echo "more" >> logs/app.log && git status --short
+ M logs/app.log
+?? .gitignore
+[exit 0 — OK]
+
+# czas rozdziału: 1.9 s
+
+## [03] Why: .gitignore only applies to untracked files
+$ git check-ignore -v --no-index logs/app.log .env build/app.bin
+.gitignore:2:*.log	logs/app.log
+.gitignore:1:.env	.env
+.gitignore:3:build/	build/app.bin
+[exit 0 — OK]
+
+# czas rozdziału: 2.2 s
+
+## [04] The fix: git rm --cached
+$ git rm -q --cached .env logs/app.log && git rm -q -r --cached build && git status --short
+D  .env
+D  build/app.bin
+D  logs/app.log
+?? .gitignore
+[exit 0 — OK]
+
+$ ls -A && ls logs build
+.env
+.git
+.gitignore
+app.py
+build
+logs
+build:
+app.bin
+
+logs:
+app.log
+[exit 0 — OK]
+
+$ git add .gitignore && git commit -qm "Stop tracking .env, logs and build" && echo "again" >> logs/app.log && git status --short && echo "clean"
+clean
+[exit 0 — OK]
+
+# czas rozdziału: 2.5 s
+
+## [05] Surprise 1: the secret is still in history
+$ git show HEAD~1:.env
+API_KEY=demo-secret-123
+[exit 0 — OK]
+
+# czas rozdziału: 1.8 s
+
+## [06] Surprise 2: teammates lose their local copy
+$ cd /lab/teammate && ls -A && git pull -q && ls -A
+.env
+.git
+app.py
+build
+logs
+.git
+.gitignore
+app.py
+[exit 0 — OK]
+
+# czas rozdziału: 1.9 s
+
+## [07] Quick check
+$ git check-ignore -v --no-index .env
+.gitignore:1:.env	.env
+[exit 0 — OK]
+
+$ git ls-files .env | wc -l
+0
+[exit 0 — OK]
+
+$ ls .env && git ls-files .env | wc -l
+.env
+0
+[exit 0 — OK]
+
+# czas rozdziału: 1.8 s
+
+# PODSUMOWANIE: 14 poleceń, błędów: 0

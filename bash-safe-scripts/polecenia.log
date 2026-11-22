@@ -1,0 +1,128 @@
+# polecenia.log — Bash scripts that don't destroy things: set -euo pipefail, quoting, [[ ]] and ${VAR:?}
+# obraz: localhost/shellproven-bash-safe-scripts:13 (sha256:b9c2f605ffda4981e7c6191eb57684a6bab4f92f59c70d2ec24bbc984c0fbc65), Debian 13.7, uruchomiono 2026-11-22T01:49:36Z
+# wersje: GNU bash, version 5.2.37(1)-release (x86_64-pc-linux-gnu) | version: 0.10.0
+# pakiety doinstalowane z repozytorium Debiana: shellcheck
+# katalog roboczy: /lab/scripts; każdy rozdział = osobna powłoka (bash --norc), jak w nagraniu
+# '%' = przygotowanie (w filmie ukryte), '$' = polecenie pokazane w filmie
+
+## [02] set -e: stop at the first error
+% mkdir -p /lab/scripts/build && touch /lab/scripts/build/old.o
+[exit 0 — OK]
+
+% printf '#!/bin/bash\ncd /lab/scripts/biuld\necho "cleaning in: $(pwd)"\n' > clean.sh
+[exit 0 — OK]
+
+% printf '#!/bin/bash\nset -e\ncd /lab/scripts/biuld\necho "cleaning in: $(pwd)"\n' > clean-safe.sh
+[exit 0 — OK]
+
+$ cat clean.sh
+#!/bin/bash
+cd /lab/scripts/biuld
+echo "cleaning in: $(pwd)"
+[exit 0 — OK]
+
+$ bash clean.sh
+clean.sh: line 2: cd: /lab/scripts/biuld: No such file or directory
+cleaning in: /lab/scripts
+[exit 0 — OK]
+
+$ bash clean-safe.sh
+clean-safe.sh: line 3: cd: /lab/scripts/biuld: No such file or directory
+[exit 1 — OK (oczekiwany ≠0)]
+
+# czas rozdziału: 1.4 s
+
+## [03] set -u and ${VAR:?}: no silent empty variables
+$ unset BUILD_DIR; echo rm -rf "$BUILD_DIR/"
+rm -rf /
+[exit 0 — OK]
+
+$ bash -c 'set -u; echo rm -rf "$BUILD_DIR/"'
+bash: line 1: BUILD_DIR: unbound variable
+[exit 127 — OK (oczekiwany ≠0)]
+
+$ bash -c 'BUILD_DIR=""; echo rm -rf "${BUILD_DIR:?is empty}/"'
+bash: line 1: BUILD_DIR: is empty
+[exit 127 — OK (oczekiwany ≠0)]
+
+# czas rozdziału: 1.7 s
+
+## [04] pipefail: failures inside a pipeline
+$ grep ERROR missing.log | wc -l; echo "exit code: $?"
+grep: missing.log: No such file or directory
+0
+exit code: 0
+[exit 0 — OK]
+
+$ set -o pipefail; grep ERROR missing.log | wc -l; echo "exit code: $?"
+grep: missing.log: No such file or directory
+0
+exit code: 2
+[exit 0 — OK]
+
+# czas rozdziału: 1.2 s
+
+## [05] Quote your variables
+% touch "my notes.txt" draft.txt
+[exit 0 — OK]
+
+$ file="my notes.txt"; ls -l $file
+ls: cannot access 'my': No such file or directory
+ls: cannot access 'notes.txt': No such file or directory
+[exit 2 — OK (oczekiwany ≠0)]
+
+$ file="my notes.txt"; ls -l "$file"
+-rw-r--r-- 1 root root 0 Nov 22 01:49 my notes.txt
+[exit 0 — OK]
+
+$ for f in *.txt; do echo "found: $f"; done
+found: draft.txt
+found: my notes.txt
+[exit 0 — OK]
+
+# czas rozdziału: 1.3 s
+
+## [06] [[ ]] instead of [ ]
+$ answer=""; [ $answer = yes ] && echo "yes"
+/tmp/.sp_seg.sh: line 2: [: =: unary operator expected
+[exit 2 — OK (oczekiwany ≠0)]
+
+$ answer=""; [[ $answer == yes ]] || echo "not yes"; name="report.csv"; [[ $name == *.csv ]] && echo "a CSV file"
+not yes
+a CSV file
+[exit 0 — OK]
+
+# czas rozdziału: 1.3 s
+
+## [07] Let shellcheck find it for you
+$ printf '#!/bin/bash\ncd $1\nrm -rf $DIR/*\nfor f in $(ls); do echo $f; done\n' > bad.sh && cat bad.sh
+#!/bin/bash
+cd $1
+rm -rf $DIR/*
+for f in $(ls); do echo $f; done
+[exit 0 — OK]
+
+$ shellcheck -f gcc bad.sh
+bad.sh:2:1: warning: Use 'cd ... || exit' or 'cd ... || return' in case cd fails. [SC2164]
+bad.sh:2:4: note: Double quote to prevent globbing and word splitting. [SC2086]
+bad.sh:3:8: warning: Use "${var:?}" to ensure this never expands to /* . [SC2115]
+bad.sh:3:8: note: Double quote to prevent globbing and word splitting. [SC2086]
+bad.sh:4:10: error: Iterating over ls output is fragile. Use globs. [SC2045]
+bad.sh:4:25: note: Double quote to prevent globbing and word splitting. [SC2086]
+[exit 1 — OK (oczekiwany ≠0)]
+
+# czas rozdziału: 1.4 s
+
+## [08] Quick check
+$ bash clean-safe.sh
+clean-safe.sh: line 3: cd: /lab/scripts/biuld: No such file or directory
+[exit 1 — OK (oczekiwany ≠0)]
+
+$ file="my notes.txt"; ls $file
+ls: cannot access 'my': No such file or directory
+ls: cannot access 'notes.txt': No such file or directory
+[exit 2 — OK (oczekiwany ≠0)]
+
+# czas rozdziału: 1.3 s
+
+# PODSUMOWANIE: 21 poleceń, błędów: 0
