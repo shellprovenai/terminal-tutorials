@@ -1,0 +1,65 @@
+# practice-test.log — 04-uprawnienia-chmod: obraz docker.io/library/debian:13, 2026-11-25T20:18:45Z
+
+# setup
+$ sh /practice/setup.sh
+
+PRACTICE — lesson 04: fix permissions without 777
+-------------------------------------------------
+/work/app belongs to dave and the group devs. erin is in devs,
+mallory is not. Someone "fixed" a Permission denied with chmod 777
+on a few files. Don't change any owner, and don't delete files:
+
+1. Write the regular files in /work/app that everyone (others) can
+   write to /work/writable.txt, one per line, sorted, like
+   ./index.php. Then fix them: run.sh gets 755, the others 644.
+2. Lock up the secrets: only dave may read and write db.env, and
+   the folder private must let dave do everything, let the devs
+   group list it and open notes.txt, and keep mallory out.
+
+Check: sh /practice/check.sh     Answer: /practice/solution.md
+[exit 0]
+
+# check PRZED rozwiązaniem (oczekiwane FAIL)
+$ sh /practice/check.sh
+PASS  /work/app still has its 6 files, all owned by dave:devs
+FAIL  /work/writable.txt does not exist yet
+FAIL  something in /work/app is still writable by everyone (find /work/app -perm -o=w) — 777 is never the fix
+FAIL  mallory can still read db.env (mode 644) — a secret should be 600
+FAIL  mallory can still get into private (mode 755) — take everything away from others
+
+RESULT: FAIL (4 check(s) failed)
+[exit 1]
+
+# solution.md
+$ cd /work/app && find . -type f -perm -o=w | sort > /work/writable.txt && chmod 755 run.sh && chmod 644 index.php img/logo.png
+
+[exit 0]
+
+# check po CZĘŚCI rozwiązania (oczekiwane FAIL)
+$ sh /practice/check.sh
+PASS  /work/app still has its 6 files, all owned by dave:devs
+PASS  writable.txt lists exactly the 3 world-writable files
+PASS  run.sh 755, index.php and logo.png 644: everyone can use them, only dave can change them
+FAIL  mallory can still read db.env (mode 644) — a secret should be 600
+FAIL  mallory can still get into private (mode 755) — take everything away from others
+
+RESULT: FAIL (2 check(s) failed)
+[exit 1]
+
+# solution.md
+$ cd /work/app && chmod 600 db.env && chmod 750 private
+
+[exit 0]
+
+# check PO solution.md (oczekiwane PASS)
+$ sh /practice/check.sh
+PASS  /work/app still has its 6 files, all owned by dave:devs
+PASS  writable.txt lists exactly the 3 world-writable files
+PASS  run.sh 755, index.php and logo.png 644: everyone can use them, only dave can change them
+PASS  db.env is 600: only dave can read it
+PASS  private is 750: dave everything, devs can list and enter, mallory is out
+
+RESULT: PASS — well done
+[exit 0]
+
+# WYNIK: OK (setup 0, przed 1, część 1, po 0; pliki: TASK.md, check.sh, setup.sh, solution.md, start.sh)

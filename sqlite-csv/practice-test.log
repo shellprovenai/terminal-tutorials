@@ -1,0 +1,58 @@
+# practice-test.log — 05-sqlite-csv: obraz docker.io/library/debian:13 + pakiety sqlite3, 2026-11-25T20:19:18Z
+
+# setup
+$ sh /practice/setup.sh
+
+PRACTICE — lesson 05: from CSV to answers with SQLite
+-----------------------------------------------------
+/work/orders.csv holds ten orders of a small online shop. The first
+line is the header: id,day,city,total. Don't change orders.csv.
+
+1. Create /work/shop.db with a table orders and load all ten orders
+   into it. id must be stored as an integer and total as a real
+   number (check with typeof), and the header must not become a row.
+2. Write /work/top.csv: one line per city with the number of orders
+   and the sum of total rounded to 2 decimals, biggest sum first,
+   with the header line city,orders,total.
+
+Check: sh /practice/check.sh     Answer: /practice/solution.md
+[exit 0]
+
+# check PRZED rozwiązaniem (oczekiwane FAIL)
+$ sh /practice/check.sh
+PASS  orders.csv is unchanged
+FAIL  /work/shop.db does not exist yet
+FAIL  /work/top.csv does not exist yet
+
+RESULT: FAIL (2 check(s) failed)
+[exit 1]
+
+# solution.md
+$ cd /work && sqlite3 shop.db "CREATE TABLE orders(id INTEGER, day TEXT, city TEXT, total REAL)" && sqlite3 shop.db ".import --csv --skip 1 orders.csv orders"
+
+[exit 0]
+
+# check po CZĘŚCI rozwiązania (oczekiwane FAIL)
+$ sh /practice/check.sh
+PASS  orders.csv is unchanged
+PASS  orders has 10 rows, id is integer, total is real, no header row
+FAIL  /work/top.csv does not exist yet
+
+RESULT: FAIL (1 check(s) failed)
+[exit 1]
+
+# solution.md
+$ cd /work && sqlite3 -header -csv shop.db "SELECT city, COUNT(*) AS orders, ROUND(SUM(total), 2) AS total FROM orders GROUP BY city ORDER BY total DESC" > top.csv
+
+[exit 0]
+
+# check PO solution.md (oczekiwane PASS)
+$ sh /practice/check.sh
+PASS  orders.csv is unchanged
+PASS  orders has 10 rows, id is integer, total is real, no header row
+PASS  top.csv has the right totals per city, biggest first, with the header
+
+RESULT: PASS — well done
+[exit 0]
+
+# WYNIK: OK (setup 0, przed 1, część 1, po 0; pliki: TASK.md, check.sh, setup.sh, solution.md, start.sh)
