@@ -1,6 +1,7 @@
 # sed for the three things you actually need: replace in place, delete lines, print a range
 
 > 🎬 Video: https://youtu.be/7sh0yrV5oSM (public from Nov 26, 2026)
+> 📝 Lesson page with a short quiz: https://shellprovenai.github.io/lekcje/sed-essentials/
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 
@@ -174,6 +175,10 @@ $ sed -n '10,15p' app.log | wc -l
 $ sed '10,15p' app.log | wc -l
 38
 ```
+
+## Practice
+
+Try it yourself, without the video: `practice/start.sh` opens a throwaway container (podman or docker) with the task, `sh /practice/check.sh` tells you when you're done, `practice/solution.md` has the answer. Tested: `practice-test.log` (FAIL before, PASS after the solution).
 
 ## Files
 

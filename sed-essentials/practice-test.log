@@ -1,0 +1,63 @@
+# practice-test.log — 18-sed-podstawy: obraz docker.io/library/debian:13, 2026-11-25T20:14:51Z
+
+# setup
+$ sh /practice/setup.sh
+
+PRACTICE — lesson 18: sed for the three things you need
+-------------------------------------------------------
+The server is moving from old.example.com to new.example.com.
+
+1. Edit /work/server.conf in place with sed:
+   - delete the comment lines (the ones that START with #),
+   - replace EVERY old.example.com with new.example.com.
+   Keep the untouched original as /work/server.conf.bak.
+   Careful: some settings contain a # inside the line, and one
+   line has the old name twice. Try without -i first!
+2. Write the lines of /work/cron.log from "=== BEGIN backup" to
+   "=== END backup" (both markers included) to /work/backup.txt.
+   Don't change cron.log.
+
+Check: sh /practice/check.sh     Answer: /practice/solution.md
+[exit 0]
+
+# check PRZED rozwiązaniem (oczekiwane FAIL)
+$ sh /practice/check.sh
+FAIL  server.conf is not changed yet — without -i, sed only prints the result
+FAIL  /work/server.conf.bak does not exist — use -i.bak (no space) to keep the original
+PASS  cron.log is unchanged
+FAIL  /work/backup.txt does not exist yet
+
+RESULT: FAIL (3 check(s) failed)
+[exit 1]
+
+# solution.md
+$ cd /work && sed -i.bak '/^#/d; s/old\.example\.com/new.example.com/g' server.conf
+
+[exit 0]
+
+# check po CZĘŚCI rozwiązania (oczekiwane FAIL)
+$ sh /practice/check.sh
+PASS  server.conf has no comment lines and uses new.example.com everywhere
+PASS  server.conf.bak is the untouched original
+PASS  cron.log is unchanged
+FAIL  /work/backup.txt does not exist yet
+
+RESULT: FAIL (1 check(s) failed)
+[exit 1]
+
+# solution.md
+$ cd /work && sed -n '/^=== BEGIN/,/^=== END/p' cron.log > backup.txt
+
+[exit 0]
+
+# check PO solution.md (oczekiwane PASS)
+$ sh /practice/check.sh
+PASS  server.conf has no comment lines and uses new.example.com everywhere
+PASS  server.conf.bak is the untouched original
+PASS  cron.log is unchanged
+PASS  backup.txt has exactly the backup section, markers included
+
+RESULT: PASS — well done
+[exit 0]
+
+# WYNIK: OK (setup 0, przed 1, część 1, po 0; pliki: TASK.md, check.sh, setup.sh, solution.md, start.sh)

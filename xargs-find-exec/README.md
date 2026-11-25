@@ -1,6 +1,7 @@
 # xargs and find -exec done right: spaces in file names, -print0, and parallel jobs
 
 > 🎬 Video: https://youtu.be/-vYIE_JQVow (public from Nov 26, 2026)
+> 📝 Lesson page with a short quiz: https://shellprovenai.github.io/lekcje/xargs-find-exec/
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 
@@ -124,6 +125,10 @@ run ./Q3 plan.txt
 $ find . -name '*.txt' -exec echo run {} +
 run ./notes.txt ./My Report.txt ./Q3 plan.txt
 ```
+
+## Practice
+
+Try it yourself, without the video: `practice/start.sh` opens a throwaway container (podman or docker) with the task, `sh /practice/check.sh` tells you when you're done, `practice/solution.md` has the answer. Tested: `practice-test.log` (FAIL before, PASS after the solution).
 
 ## Files
 

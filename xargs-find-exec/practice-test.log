@@ -1,0 +1,65 @@
+# practice-test.log — 17-xargs-exec: obraz docker.io/library/debian:13, 2026-11-25T20:14:16Z
+
+# setup
+$ sh /practice/setup.sh
+
+PRACTICE — lesson 17: xargs and find -exec done right
+-----------------------------------------------------
+/work/project is a small project full of leftovers. Several file
+names have spaces in them, like "old report.bak". Use find with
+xargs or -exec:
+
+1. Delete every *.bak file anywhere in /work/project (there are
+   four). Nothing else may disappear: notes/draft is a real file
+   and must stay. Preview with echo first!
+2. Compress every *.log file in /work/project/logs with gzip, one
+   file per gzip, up to 4 at a time (xargs -P), so each becomes
+   NAME.log.gz. logs/README.txt must stay as it is.
+
+Check: sh /practice/check.sh     Answer: /practice/solution.md
+[exit 0]
+
+# check PRZED rozwiązaniem (oczekiwane FAIL)
+$ sh /practice/check.sh
+PASS  report.txt, config.ini, notes/draft, src/main.c and logs/README.txt are still there
+FAIL  these .bak files are still there: ./config.bak, ./notes/draft v2.bak, ./old report.bak, ./src/main.c.bak
+FAIL  logs/web 1.log is not compressed yet
+FAIL  logs/web 2.log is not compressed yet
+FAIL  logs/api.log is not compressed yet
+FAIL  logs/db errors.log is not compressed yet
+
+RESULT: FAIL (5 check(s) failed)
+[exit 1]
+
+# solution.md
+$ cd /work/project && find . -name '*.bak' -print0 | xargs -0 rm --
+
+[exit 0]
+
+# check po CZĘŚCI rozwiązania (oczekiwane FAIL)
+$ sh /practice/check.sh
+PASS  report.txt, config.ini, notes/draft, src/main.c and logs/README.txt are still there
+PASS  all four .bak files are gone
+FAIL  logs/web 1.log is not compressed yet
+FAIL  logs/web 2.log is not compressed yet
+FAIL  logs/api.log is not compressed yet
+FAIL  logs/db errors.log is not compressed yet
+
+RESULT: FAIL (4 check(s) failed)
+[exit 1]
+
+# solution.md
+$ cd /work/project && find logs -name '*.log' -print0 | xargs -0 -n 1 -P 4 gzip
+
+[exit 0]
+
+# check PO solution.md (oczekiwane PASS)
+$ sh /practice/check.sh
+PASS  report.txt, config.ini, notes/draft, src/main.c and logs/README.txt are still there
+PASS  all four .bak files are gone
+PASS  each log is now its own .log.gz with the original content
+
+RESULT: PASS — well done
+[exit 0]
+
+# WYNIK: OK (setup 0, przed 1, część 1, po 0; pliki: TASK.md, check.sh, setup.sh, solution.md, start.sh)
