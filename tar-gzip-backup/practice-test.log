@@ -1,0 +1,67 @@
+# practice-test.log — 11-tar-kopia: obraz docker.io/library/debian:13, 2026-11-25T20:29:49Z
+
+# setup
+$ sh /practice/setup.sh
+
+PRACTICE — lesson 11: tar and gzip without the usual mistakes
+-------------------------------------------------------------
+/work/sites/blog is a small blog. cache/ is 3 MB of generated
+pages, and the *.tmp files are editor leftovers.
+/work/old-backup.tgz is an older backup of the blog.
+
+1. Create /work/blog.tgz (tar + gzip) with the blog, but without
+   the cache folder and without any *.tmp file. Paths inside the
+   archive must start with blog/ (not work/sites/blog/).
+2. posts/hello.md was broken by a bad edit. Restore ONLY that file
+   from /work/old-backup.tgz. Everything else in the blog must
+   stay as it is: about.md is newer than the backup, keep it.
+   List the old archive first: how are its paths stored?
+
+Check: sh /practice/check.sh     Answer: /practice/solution.md
+[exit 0]
+
+# check PRZED rozwiązaniem (oczekiwane FAIL)
+$ sh /practice/check.sh
+PASS  the blog still has its 8 files and the newer about.md
+FAIL  /work/blog.tgz does not exist yet
+FAIL  posts/hello.md is not restored yet — tar -tzf /work/old-backup.tgz shows the exact path to extract
+
+RESULT: FAIL (2 check(s) failed)
+[exit 1]
+
+# solution.md
+$ tar -czf /work/blog.tgz --exclude=cache --exclude='*.tmp' -C /work/sites blog
+
+[exit 0]
+
+# check po CZĘŚCI rozwiązania (oczekiwane FAIL)
+$ sh /practice/check.sh
+PASS  the blog still has its 8 files and the newer about.md
+PASS  blog.tgz has the 5 blog files with paths starting with blog/
+FAIL  posts/hello.md is not restored yet — tar -tzf /work/old-backup.tgz shows the exact path to extract
+
+RESULT: FAIL (1 check(s) failed)
+[exit 1]
+
+# solution.md
+$ mkdir -p /tmp/old && tar -xzf /work/old-backup.tgz -C /tmp/old work/sites/blog/posts/hello.md && cp /tmp/old/work/sites/blog/posts/hello.md /work/sites/blog/posts/hello.md
+
+[exit 0]
+
+# check PO solution.md (oczekiwane PASS)
+$ sh /practice/check.sh
+PASS  the blog still has its 8 files and the newer about.md
+PASS  blog.tgz has the 5 blog files with paths starting with blog/
+PASS  posts/hello.md is restored from the old backup
+
+RESULT: PASS — well done
+[exit 0]
+
+# start.sh (prawdziwe uruchomienie, wejście: sh /practice/check.sh; exit) — oczekiwane: kontener startuje, RESULT: FAIL
+PASS  the blog still has its 8 files and the newer about.md
+FAIL  /work/blog.tgz does not exist yet
+FAIL  posts/hello.md is not restored yet — tar -tzf /work/old-backup.tgz shows the exact path to extract
+RESULT: FAIL (2 check(s) failed)
+[start.sh: OK]
+
+# WYNIK: OK (setup 0, przed 1, część 1, po 0; pliki: TASK.md, check.sh, setup.sh, solution.md, start.sh)

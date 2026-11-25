@@ -1,6 +1,7 @@
 # tar and gzip without the usual mistakes: back up a folder, skip the junk, verify the archive
 
 > 🎬 Video: https://youtu.be/qmOhkBLBX7k (public from Nov 23, 2026)
+> 📝 Lesson page with a short quiz: https://shellprovenai.github.io/lekcje/tar-gzip-backup/
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 
@@ -157,6 +158,10 @@ gzip OK
 $ tar -dzf small.tgz -C /lab/work && echo "archive matches the disk"
 archive matches the disk
 ```
+
+## Practice
+
+Try it yourself, without the video: `practice/start.sh` opens a throwaway container (podman or docker) with the task, `sh /practice/check.sh` tells you when you're done, `practice/solution.md` has the answer. Tested: `practice-test.log` (FAIL before, PASS after the solution).
 
 ## Files
 

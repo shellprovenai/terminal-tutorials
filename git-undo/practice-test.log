@@ -1,4 +1,4 @@
-# practice-test.log — 03-git-cofanie: obraz docker.io/library/debian:13 + pakiety git, 2026-11-25T19:53:08Z
+# practice-test.log — 03-git-cofanie: obraz docker.io/library/debian:13 + pakiety git, 2026-11-25T20:50:44Z
 
 # setup
 $ sh /practice/setup.sh
@@ -47,11 +47,11 @@ RESULT: FAIL (2 check(s) failed)
 
 # solution.md
 $ cd /work/shop && git revert --no-edit HEAD && git push origin main
-[main 7dfd033] Revert "Raise mug price to 99"
- Date: Wed Nov 25 19:53:12 2026 +0000
+[main 1607803] Revert "Raise mug price to 99"
+ Date: Wed Nov 25 20:50:48 2026 +0000
  1 file changed, 1 insertion(+), 1 deletion(-)
 To /work/origin.git
-   64910d5..7dfd033  main -> main
+   cc11361..1607803  main -> main
 [exit 0]
 
 # check PO solution.md (oczekiwane PASS)
@@ -63,5 +63,13 @@ PASS  your teammate can pull the fix with a plain git pull
 
 RESULT: PASS — well done
 [exit 0]
+
+# start.sh (prawdziwe uruchomienie, wejście: sh /practice/check.sh; exit) — oczekiwane: kontener startuje, RESULT: FAIL
+FAIL  secrets.env is still staged (git status shows A in the first column)
+PASS  the notes.txt edit is still there, uncommitted
+FAIL  on origin the mug still doesn't cost 12
+FAIL  your teammate can't get the fix with a plain (fast-forward) pull
+RESULT: FAIL (3 check(s) failed)
+[start.sh: OK]
 
 # WYNIK: OK (setup 0, przed 1, część 1, po 0; pliki: TASK.md, check.sh, setup.sh, solution.md, start.sh)

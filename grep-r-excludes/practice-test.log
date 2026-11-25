@@ -1,4 +1,4 @@
-# practice-test.log — 02-grep-r-wykluczenia: obraz docker.io/library/debian:13, 2026-11-25T19:53:01Z
+# practice-test.log — 02-grep-r-wykluczenia: obraz docker.io/library/debian:13, 2026-11-25T20:29:27Z
 
 # setup
 $ sh /practice/setup.sh
@@ -58,5 +58,12 @@ PASS  files.txt lists exactly the files with the text api.v2
 
 RESULT: PASS — well done
 [exit 0]
+
+# start.sh (prawdziwe uruchomienie, wejście: sh /practice/check.sh; exit) — oczekiwane: kontener startuje, RESULT: FAIL
+PASS  /work/shop is unchanged
+FAIL  /work/fixme.txt does not exist yet
+FAIL  /work/files.txt does not exist yet
+RESULT: FAIL (2 check(s) failed)
+[start.sh: OK]
 
 # WYNIK: OK (setup 0, przed 1, część 1, po 0; pliki: TASK.md, check.sh, setup.sh, solution.md, start.sh)

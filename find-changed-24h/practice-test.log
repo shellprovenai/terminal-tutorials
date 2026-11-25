@@ -1,4 +1,4 @@
-# practice-test.log — 01-find-zmienione-24h: obraz docker.io/library/debian:13, 2026-11-25T19:45:01Z
+# practice-test.log — 01-find-zmienione-24h: obraz docker.io/library/debian:13, 2026-11-25T20:24:56Z
 
 # setup
 $ sh /practice/setup.sh
@@ -55,5 +55,12 @@ PASS  old.txt lists exactly the files older than 72 hours
 
 RESULT: PASS — well done
 [exit 0]
+
+# start.sh (prawdziwe uruchomienie, wejście: sh /practice/check.sh; exit) — oczekiwane: kontener startuje, RESULT: FAIL
+PASS  /work/site still has its 10 files
+FAIL  /work/changed.tgz does not exist yet
+FAIL  /work/old.txt does not exist yet
+RESULT: FAIL (2 check(s) failed)
+[start.sh: OK]
 
 # WYNIK: OK (setup 0, przed 1, część 1, po 0; pliki: TASK.md, check.sh, setup.sh, solution.md, start.sh)
