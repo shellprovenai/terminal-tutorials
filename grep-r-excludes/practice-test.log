@@ -1,0 +1,62 @@
+# practice-test.log — 02-grep-r-wykluczenia: obraz docker.io/library/debian:13, 2026-11-25T19:53:01Z
+
+# setup
+$ sh /practice/setup.sh
+
+PRACTICE — lesson 02: grep -r without the noise
+-----------------------------------------------
+/work/shop is a small web shop project. Besides its own code it has
+node_modules (two of them, one is frontend/node_modules), .git, a
+build folder and a compiled binary in bin. Only the project's own
+text files count. Without changing anything inside /work/shop:
+
+1. Write every line that contains "fixme" in ANY case to
+   /work/fixme.txt, with file name and line number, like
+   ./app/server.js:1:// FIXME: close the db on exit
+   Skip node_modules, .git and build. Some notes are lowercase.
+2. Write the names of the files that contain the exact text
+   api.v2 to /work/files.txt, one per line, sorted, like
+   ./config/settings.ini   (same folders skipped, no binaries).
+   Careful: api_v2 and api-v2 are NOT the same text.
+
+Check: sh /practice/check.sh     Answer: /practice/solution.md
+[exit 0]
+
+# check PRZED rozwiązaniem (oczekiwane FAIL)
+$ sh /practice/check.sh
+PASS  /work/shop is unchanged
+FAIL  /work/fixme.txt does not exist yet
+FAIL  /work/files.txt does not exist yet
+
+RESULT: FAIL (2 check(s) failed)
+[exit 1]
+
+# solution.md
+$ cd /work/shop && grep -rniI "fixme" --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=build . > /work/fixme.txt
+
+[exit 0]
+
+# check po CZĘŚCI rozwiązania (oczekiwane FAIL)
+$ sh /practice/check.sh
+PASS  /work/shop is unchanged
+PASS  fixme.txt has exactly the project's own fixme lines
+FAIL  /work/files.txt does not exist yet
+
+RESULT: FAIL (1 check(s) failed)
+[exit 1]
+
+# solution.md
+$ cd /work/shop && grep -rlIF "api.v2" --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=build . | sort > /work/files.txt
+
+[exit 0]
+
+# check PO solution.md (oczekiwane PASS)
+$ sh /practice/check.sh
+PASS  /work/shop is unchanged
+PASS  fixme.txt has exactly the project's own fixme lines
+PASS  files.txt lists exactly the files with the text api.v2
+
+RESULT: PASS — well done
+[exit 0]
+
+# WYNIK: OK (setup 0, przed 1, część 1, po 0; pliki: TASK.md, check.sh, setup.sh, solution.md, start.sh)

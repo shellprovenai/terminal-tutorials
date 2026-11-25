@@ -1,0 +1,59 @@
+# practice-test.log — 01-find-zmienione-24h: obraz docker.io/library/debian:13, 2026-11-25T19:45:01Z
+
+# setup
+$ sh /practice/setup.sh
+
+PRACTICE — lesson 01: find files by age
+---------------------------------------
+/work/site is a small website project. Its files were changed at
+different times, from 10 minutes to 6 days ago. Without changing
+anything inside /work/site:
+
+1. Create /work/changed.tgz with every regular file in /work/site
+   changed in the last 24 hours, but nothing from site/cache.
+   One file name has a space in it, and it must be in the archive.
+2. Write the files NOT changed for more than 72 hours (3 days) to
+   /work/old.txt, one per line, sorted, like ./LICENSE.
+   Exactly 72 hours, so be careful with how find rounds days.
+
+Check: sh /practice/check.sh     Answer: /practice/solution.md
+[exit 0]
+
+# check PRZED rozwiązaniem (oczekiwane FAIL)
+$ sh /practice/check.sh
+PASS  /work/site still has its 10 files
+FAIL  /work/changed.tgz does not exist yet
+FAIL  /work/old.txt does not exist yet
+
+RESULT: FAIL (2 check(s) failed)
+[exit 1]
+
+# solution.md
+$ cd /work/site && find . -path ./cache -prune -o -type f -mmin -1440 -print0 | tar --null -T - -czf /work/changed.tgz
+
+[exit 0]
+
+# check po CZĘŚCI rozwiązania (oczekiwane FAIL)
+$ sh /practice/check.sh
+PASS  /work/site still has its 10 files
+PASS  changed.tgz has exactly the files from the last 24 hours (cache skipped)
+FAIL  /work/old.txt does not exist yet
+
+RESULT: FAIL (1 check(s) failed)
+[exit 1]
+
+# solution.md
+$ cd /work/site && find . -type f -mmin +4320 | sort > /work/old.txt
+
+[exit 0]
+
+# check PO solution.md (oczekiwane PASS)
+$ sh /practice/check.sh
+PASS  /work/site still has its 10 files
+PASS  changed.tgz has exactly the files from the last 24 hours (cache skipped)
+PASS  old.txt lists exactly the files older than 72 hours
+
+RESULT: PASS — well done
+[exit 0]
+
+# WYNIK: OK (setup 0, przed 1, część 1, po 0; pliki: TASK.md, check.sh, setup.sh, solution.md, start.sh)

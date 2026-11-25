@@ -1,0 +1,67 @@
+# practice-test.log — 03-git-cofanie: obraz docker.io/library/debian:13 + pakiety git, 2026-11-25T19:53:08Z
+
+# setup
+$ sh /practice/setup.sh
+
+PRACTICE — lesson 03: undo in Git
+---------------------------------
+/work/shop is your clone of a small shop website. The repository
+/work/origin.git is the shared server, and /work/mate is a teammate
+who already pulled everything. Right now in /work/shop you have:
+an uncommitted edit in notes.txt (keep it, don't commit it) and a
+file secrets.env that you staged with git add by mistake.
+
+1. Unstage secrets.env. Keep the file on disk, and don't commit it.
+2. The pushed commit "Raise mug price to 99" was a mistake. Undo it
+   so the mug costs 12 again, push the fix to origin, and make sure
+   your teammate can still simply pull. Your notes.txt edit must
+   survive.
+
+Check: sh /practice/check.sh     Answer: /practice/solution.md
+[exit 0]
+
+# check PRZED rozwiązaniem (oczekiwane FAIL)
+$ sh /practice/check.sh
+FAIL  secrets.env is still staged (git status shows A in the first column)
+PASS  the notes.txt edit is still there, uncommitted
+FAIL  on origin the mug still doesn't cost 12
+FAIL  your teammate can't get the fix with a plain (fast-forward) pull
+
+RESULT: FAIL (3 check(s) failed)
+[exit 1]
+
+# solution.md
+$ cd /work/shop && git restore --staged secrets.env
+
+[exit 0]
+
+# check po CZĘŚCI rozwiązania (oczekiwane FAIL)
+$ sh /practice/check.sh
+PASS  secrets.env is unstaged, still on disk and in no commit
+PASS  the notes.txt edit is still there, uncommitted
+FAIL  on origin the mug still doesn't cost 12
+FAIL  your teammate can't get the fix with a plain (fast-forward) pull
+
+RESULT: FAIL (2 check(s) failed)
+[exit 1]
+
+# solution.md
+$ cd /work/shop && git revert --no-edit HEAD && git push origin main
+[main 7dfd033] Revert "Raise mug price to 99"
+ Date: Wed Nov 25 19:53:12 2026 +0000
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+To /work/origin.git
+   64910d5..7dfd033  main -> main
+[exit 0]
+
+# check PO solution.md (oczekiwane PASS)
+$ sh /practice/check.sh
+PASS  secrets.env is unstaged, still on disk and in no commit
+PASS  the notes.txt edit is still there, uncommitted
+PASS  origin has the original commit plus its revert, the mug costs 12
+PASS  your teammate can pull the fix with a plain git pull
+
+RESULT: PASS — well done
+[exit 0]
+
+# WYNIK: OK (setup 0, przed 1, część 1, po 0; pliki: TASK.md, check.sh, setup.sh, solution.md, start.sh)
