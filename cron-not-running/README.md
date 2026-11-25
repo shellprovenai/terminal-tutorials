@@ -123,6 +123,10 @@ $ cat /tmp/fixed.log
 ran at 20:08
 ```
 
+## Practice
+
+Try it yourself, without the video: `practice/start.sh` opens a throwaway container (podman or docker) with the task, `sh /practice/check.sh` tells you when you're done, `practice/solution.md` has the answer. Tested: `practice-test.log` (FAIL before, PASS after the solution).
+
 ## Files
 
 - `setup.sh` — demo folder

@@ -1,0 +1,77 @@
+# practice-test.log — 15-systemctl-journalctl: obraz docker.io/library/debian:13 + pakiety systemd systemd-journal-remote, 2026-11-25T20:55:41Z
+
+# setup
+$ sh /practice/setup.sh
+
+PRACTICE — lesson 15: why did the service fail?
+-----------------------------------------------
+/work/journal is the systemd journal copied from server web1 (it
+has two boots), and /work/rootfs is the disk of that server. No
+systemd runs in this container, so read the journal with
+journalctl -D /work/journal ... and change the server's units with
+systemctl --root=/work/rootfs ...
+
+1. backup.service failed during the LAST boot of web1. Write the
+   full path of the program it could not find to /work/missing.txt
+   (only the path, like /usr/bin/example).
+2. The program really is /usr/local/sbin/backup-run on that disk.
+   Fix /work/rootfs/etc/systemd/system/backup.service and make sure
+   it will start at every boot of web1. Leave nginx.service alone.
+
+Check: sh /practice/check.sh     Answer: /practice/solution.md
+[exit 0]
+
+# check PRZED rozwiązaniem (oczekiwane FAIL)
+$ sh /practice/check.sh
+FAIL  /work/missing.txt does not exist yet
+FAIL  backup.service should have ExecStart=/usr/local/sbin/backup-run (now: ExecStart=/usr/local/bin/backup-run)
+FAIL  backup.service is not enabled — start (or --now) only means now; at boot needs: systemctl --root=/work/rootfs enable backup.service
+PASS  nginx.service is unchanged and still enabled
+
+RESULT: FAIL (3 check(s) failed)
+[exit 1]
+
+# solution.md
+$ journalctl -D /work/journal -b -u backup -p err --no-pager | grep -o "executable '[^']*'" | cut -d"'" -f2 > /work/missing.txt
+
+[exit 0]
+
+# check po CZĘŚCI rozwiązania (oczekiwane FAIL)
+$ sh /practice/check.sh
+PASS  missing.txt names the program from the last boot
+FAIL  backup.service should have ExecStart=/usr/local/sbin/backup-run (now: ExecStart=/usr/local/bin/backup-run)
+FAIL  backup.service is not enabled — start (or --now) only means now; at boot needs: systemctl --root=/work/rootfs enable backup.service
+PASS  nginx.service is unchanged and still enabled
+
+RESULT: FAIL (2 check(s) failed)
+[exit 1]
+
+# solution.md
+$ sed -i 's|^ExecStart=.*|ExecStart=/usr/local/sbin/backup-run|' /work/rootfs/etc/systemd/system/backup.service
+
+[exit 0]
+
+# solution.md
+$ systemctl --root=/work/rootfs enable backup.service
+Created symlink '/work/rootfs/etc/systemd/system/multi-user.target.wants/backup.service' → '/etc/systemd/system/backup.service'.
+[exit 0]
+
+# check PO solution.md (oczekiwane PASS)
+$ sh /practice/check.sh
+PASS  missing.txt names the program from the last boot
+PASS  backup.service now runs /usr/local/sbin/backup-run
+PASS  backup.service is enabled, it will start at every boot
+PASS  nginx.service is unchanged and still enabled
+
+RESULT: PASS — well done
+[exit 0]
+
+# start.sh (prawdziwe uruchomienie, wejście: sh /practice/check.sh; exit) — oczekiwane: kontener startuje, RESULT: FAIL
+FAIL  /work/missing.txt does not exist yet
+FAIL  backup.service should have ExecStart=/usr/local/sbin/backup-run (now: ExecStart=/usr/local/bin/backup-run)
+FAIL  backup.service is not enabled — start (or --now) only means now; at boot needs: systemctl --root=/work/rootfs enable backup.service
+PASS  nginx.service is unchanged and still enabled
+RESULT: FAIL (3 check(s) failed)
+[start.sh: OK]
+
+# WYNIK: OK (setup 0, przed 1, część 1, po 0; pliki: TASK.md, check.sh, setup.sh, solution.md, start.sh)

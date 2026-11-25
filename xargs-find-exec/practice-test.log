@@ -1,4 +1,4 @@
-# practice-test.log — 17-xargs-exec: obraz docker.io/library/debian:13, 2026-11-25T20:14:16Z
+# practice-test.log — 17-xargs-exec: obraz docker.io/library/debian:13, 2026-11-25T20:56:30Z
 
 # setup
 $ sh /practice/setup.sh
@@ -61,5 +61,15 @@ PASS  each log is now its own .log.gz with the original content
 
 RESULT: PASS — well done
 [exit 0]
+
+# start.sh (prawdziwe uruchomienie, wejście: sh /practice/check.sh; exit) — oczekiwane: kontener startuje, RESULT: FAIL
+PASS  report.txt, config.ini, notes/draft, src/main.c and logs/README.txt are still there
+FAIL  these .bak files are still there: ./config.bak, ./notes/draft v2.bak, ./old report.bak, ./src/main.c.bak
+FAIL  logs/web 1.log is not compressed yet
+FAIL  logs/web 2.log is not compressed yet
+FAIL  logs/api.log is not compressed yet
+FAIL  logs/db errors.log is not compressed yet
+RESULT: FAIL (5 check(s) failed)
+[start.sh: OK]
 
 # WYNIK: OK (setup 0, przed 1, część 1, po 0; pliki: TASK.md, check.sh, setup.sh, solution.md, start.sh)

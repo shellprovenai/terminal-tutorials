@@ -1,0 +1,71 @@
+# practice-test.log — 16-bashrc-profile: obraz docker.io/library/debian:13, 2026-11-25T20:56:10Z
+
+# setup
+$ sh /practice/setup.sh
+
+PRACTICE — lesson 16: .bashrc vs .profile vs .bash_profile
+----------------------------------------------------------
+/work/home is the home folder of a developer. Their aliases (ll,
+gs) work in every new terminal tab, but over SSH they are gone.
+You can try both kinds of shell with that home folder:
+  new terminal tab:  HOME=/work/home bash -i -c 'alias'
+  SSH login shell:   HOME=/work/home bash -l -i -c 'alias'
+
+1. Add the alias  logs='tail -n 20 app.log'  so that every new
+   terminal tab (interactive, non-login shell) has it.
+2. Make login shells get all the aliases too. Keep .bash_profile
+   and what it sets (PATH with ~/bin, EDITOR); don't copy the
+   aliases into more than one file.
+
+Check: sh /practice/check.sh     Answer: /practice/solution.md
+[exit 0]
+
+# check PRZED rozwiązaniem (oczekiwane FAIL)
+$ sh /practice/check.sh
+FAIL  a new terminal tab doesn't have the alias logs='tail -n 20 app.log'
+FAIL  a login shell (SSH) is missing aliases — it reads only ~/.bash_profile; make it load ~/.profile (which loads ~/.bashrc)
+PASS  ~/.bash_profile still sets PATH and EDITOR
+PASS  no alias is defined in more than one file
+
+RESULT: FAIL (2 check(s) failed)
+[exit 1]
+
+# solution.md
+$ echo "alias logs='tail -n 20 app.log'" >> /work/home/.bashrc
+
+[exit 0]
+
+# check po CZĘŚCI rozwiązania (oczekiwane FAIL)
+$ sh /practice/check.sh
+PASS  a new terminal tab has the alias logs
+FAIL  a login shell (SSH) is missing aliases — it reads only ~/.bash_profile; make it load ~/.profile (which loads ~/.bashrc)
+PASS  ~/.bash_profile still sets PATH and EDITOR
+PASS  no alias is defined in more than one file
+
+RESULT: FAIL (1 check(s) failed)
+[exit 1]
+
+# solution.md
+$ echo '[ -f ~/.profile ] && . ~/.profile' >> /work/home/.bash_profile
+
+[exit 0]
+
+# check PO solution.md (oczekiwane PASS)
+$ sh /practice/check.sh
+PASS  a new terminal tab has the alias logs
+PASS  a login shell (SSH) has ll, gs and logs
+PASS  ~/.bash_profile still sets PATH and EDITOR
+PASS  no alias is defined in more than one file
+
+RESULT: PASS — well done
+[exit 0]
+
+# start.sh (prawdziwe uruchomienie, wejście: sh /practice/check.sh; exit) — oczekiwane: kontener startuje, RESULT: FAIL
+FAIL  a new terminal tab doesn't have the alias logs='tail -n 20 app.log'
+FAIL  a login shell (SSH) is missing aliases — it reads only ~/.bash_profile; make it load ~/.profile (which loads ~/.bashrc)
+PASS  ~/.bash_profile still sets PATH and EDITOR
+PASS  no alias is defined in more than one file
+RESULT: FAIL (2 check(s) failed)
+[start.sh: OK]
+
+# WYNIK: OK (setup 0, przed 1, część 1, po 0; pliki: TASK.md, check.sh, setup.sh, solution.md, start.sh)

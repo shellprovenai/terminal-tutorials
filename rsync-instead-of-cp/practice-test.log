@@ -1,0 +1,73 @@
+# practice-test.log — 12-rsync-kopia: obraz docker.io/library/debian:13 + pakiety rsync, 2026-11-25T20:54:03Z
+
+# setup
+$ sh /practice/setup.sh
+
+PRACTICE — lesson 12: rsync instead of cp
+-----------------------------------------
+/work/docs holds a team's documents. /work/mirror is a copy of it
+from last week: since then a file changed, one was added and two
+were deleted. Editor swap files (*.swp) and the .cache folder must
+never go into the mirror. Don't change anything inside /work/docs.
+
+1. First a preview: save the rsync dry run (one line per change,
+   deletions included) to /work/preview.txt. The mirror must not
+   change yet. It should list the two deleted files.
+2. Now make /work/mirror match /work/docs for real: same files,
+   same modification times, the deleted files removed, no *.swp,
+   no .cache. Careful with the slash: the files belong directly in
+   /work/mirror, not in /work/mirror/docs.
+
+Check: sh /practice/check.sh     Answer: /practice/solution.md
+[exit 0]
+
+# check PRZED rozwiązaniem (oczekiwane FAIL)
+$ sh /practice/check.sh
+PASS  /work/docs is unchanged
+FAIL  /work/preview.txt does not exist yet (or is empty)
+FAIL  the mirror still has the deleted files old-plan.md and drafts/scratch.md — the real run needs --delete too
+
+RESULT: FAIL (2 check(s) failed)
+[exit 1]
+
+# solution.md
+$ cd /work && rsync -ain --delete --exclude='*.swp' --exclude=.cache/ docs/ mirror/ > /work/preview.txt
+
+[exit 0]
+
+# check po CZĘŚCI rozwiązania (oczekiwane FAIL)
+$ sh /practice/check.sh
+PASS  /work/docs is unchanged
+PASS  preview.txt lists the changes, including the two deletions
+FAIL  the mirror still has the deleted files old-plan.md and drafts/scratch.md — the real run needs --delete too
+
+RESULT: FAIL (1 check(s) failed)
+[exit 1]
+
+# solution.md
+$ cd /work && rsync -ai --delete --exclude='*.swp' --exclude=.cache/ docs/ mirror/
+*deleting   old-plan.md
+*deleting   drafts/scratch.md
+.d..t...... ./
+>f+++++++++ budget.csv
+>f.st...... notes.md
+.d..t...... drafts/
+[exit 0]
+
+# check PO solution.md (oczekiwane PASS)
+$ sh /practice/check.sh
+PASS  /work/docs is unchanged
+PASS  preview.txt lists the changes, including the two deletions
+PASS  the mirror matches docs: same files and times, deletions done, no *.swp or .cache
+
+RESULT: PASS — well done
+[exit 0]
+
+# start.sh (prawdziwe uruchomienie, wejście: sh /practice/check.sh; exit) — oczekiwane: kontener startuje, RESULT: FAIL
+PASS  /work/docs is unchanged
+FAIL  /work/preview.txt does not exist yet (or is empty)
+FAIL  the mirror still has the deleted files old-plan.md and drafts/scratch.md — the real run needs --delete too
+RESULT: FAIL (2 check(s) failed)
+[start.sh: OK]
+
+# WYNIK: OK (setup 0, przed 1, część 1, po 0; pliki: TASK.md, check.sh, setup.sh, solution.md, start.sh)

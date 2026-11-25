@@ -1,0 +1,67 @@
+# practice-test.log — 10-awk-logi: obraz docker.io/library/debian:13, 2026-11-25T20:53:45Z
+
+# setup
+$ sh /practice/setup.sh
+
+PRACTICE — lesson 10: answer questions about a log with awk
+-----------------------------------------------------------
+/work/app.log is a web shop's request log. Each line is:
+  time  user  status  message (any number of words)  ms
+The last word is always the request's duration in milliseconds.
+Don't change /work/app.log.
+
+1. Write every request slower than 1000 ms to
+   /work/report/slow.txt as "user ms", one per line, in log
+   order, like: tom 2300
+2. Write the total time per user to /work/report/users.txt as
+   "user total", one per line, biggest total first.
+   Careful: the messages don't all have the same number of words.
+
+Check: sh /practice/check.sh     Answer: /practice/solution.md
+[exit 0]
+
+# check PRZED rozwiązaniem (oczekiwane FAIL)
+$ sh /practice/check.sh
+PASS  app.log is unchanged
+FAIL  /work/report/slow.txt does not exist yet
+FAIL  /work/report/users.txt does not exist yet
+
+RESULT: FAIL (2 check(s) failed)
+[exit 1]
+
+# solution.md
+$ cd /work && awk '$NF > 1000 {print $2, $NF}' app.log > report/slow.txt
+
+[exit 0]
+
+# check po CZĘŚCI rozwiązania (oczekiwane FAIL)
+$ sh /practice/check.sh
+PASS  app.log is unchanged
+PASS  slow.txt lists the 4 slow requests as "user ms"
+FAIL  /work/report/users.txt does not exist yet
+
+RESULT: FAIL (1 check(s) failed)
+[exit 1]
+
+# solution.md
+$ cd /work && awk '{t[$2] += $NF} END {for (u in t) print u, t[u]}' app.log | sort -k2 -rn > report/users.txt
+
+[exit 0]
+
+# check PO solution.md (oczekiwane PASS)
+$ sh /practice/check.sh
+PASS  app.log is unchanged
+PASS  slow.txt lists the 4 slow requests as "user ms"
+PASS  users.txt has the total per user, biggest first
+
+RESULT: PASS — well done
+[exit 0]
+
+# start.sh (prawdziwe uruchomienie, wejście: sh /practice/check.sh; exit) — oczekiwane: kontener startuje, RESULT: FAIL
+PASS  app.log is unchanged
+FAIL  /work/report/slow.txt does not exist yet
+FAIL  /work/report/users.txt does not exist yet
+RESULT: FAIL (2 check(s) failed)
+[start.sh: OK]
+
+# WYNIK: OK (setup 0, przed 1, część 1, po 0; pliki: TASK.md, check.sh, setup.sh, solution.md, start.sh)

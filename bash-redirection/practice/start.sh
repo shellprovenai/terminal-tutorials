@@ -7,5 +7,5 @@ cd "$(dirname "$0")"
 ENGINE=${ENGINE:-$(command -v podman || command -v docker || true)}
 [ -n "$ENGINE" ] || { echo "Please install podman (or docker) first."; exit 1; }
 exec "$ENGINE" run --rm -it --name practice06 --hostname practice \
-  -v "$PWD":/practice:ro,Z -w /work docker.io/library/debian:13 \
-  sh -c 'sh /practice/setup.sh && cd /work && exec bash'
+  -v "$PWD":/practice:ro,Z -w / docker.io/library/debian:13 \
+  sh -c 'mkdir -p /work && sh /practice/setup.sh && cd /work && exec bash'

@@ -1,6 +1,7 @@
 # "Address already in use": find which process holds a port (ss, lsof, fuser) and free it
 
 > 🎬 Video: https://youtu.be/srChWgDNCsU (public from Nov 24, 2026)
+> 📝 Lesson page with a short quiz: https://shellprovenai.github.io/lekcje/port-in-use/
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 
@@ -100,6 +101,10 @@ $ kill $(lsof -t -i :8080); sleep 0.5; (setsid sh -c 'socat TCP-LISTEN:8080,fork
 8080/tcp:              147
 exit status 137
 ```
+
+## Practice
+
+Try it yourself, without the video: `practice/start.sh` opens a throwaway container (podman or docker) with the task, `sh /practice/check.sh` tells you when you're done, `practice/solution.md` has the answer. Tested: `practice-test.log` (FAIL before, PASS after the solution).
 
 ## Files
 

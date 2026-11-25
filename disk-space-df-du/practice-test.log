@@ -1,0 +1,66 @@
+# practice-test.log — 07-du-df-dysk: obraz docker.io/library/debian:13, 2026-11-25T20:52:58Z
+
+# setup
+$ sh /practice/setup.sh
+
+PRACTICE — lesson 07: find what's eating the disk
+-------------------------------------------------
+/work/var is a small server: logs, a cache, mail and a website.
+A program is running and still writes to log/app/app.log.
+
+1. Write the size of each folder directly inside /work/var to
+   /work/usage.txt, one line each, human-readable (like 25M),
+   sorted from the smallest to the biggest. Do this first.
+   Careful: the sizes have one, two or three digits.
+2. Free the space used by /work/var/log/app/app.log. The program
+   must keep running and the file must still be there (empty).
+   Don't delete or change any other file.
+
+Check: sh /practice/check.sh     Answer: /practice/solution.md
+[exit 0]
+
+# check PRZED rozwiązaniem (oczekiwane FAIL)
+$ sh /practice/check.sh
+FAIL  /work/usage.txt does not exist yet (or is empty)
+FAIL  app.log still uses 70M — empty it
+PASS  all the other files are untouched
+
+RESULT: FAIL (2 check(s) failed)
+[exit 1]
+
+# solution.md
+$ cd /work/var && du -sh * | sort -h > /work/usage.txt
+
+[exit 0]
+
+# check po CZĘŚCI rozwiązania (oczekiwane FAIL)
+$ sh /practice/check.sh
+PASS  usage.txt lists the folders from the smallest to the biggest
+FAIL  app.log still uses 70M — empty it
+PASS  all the other files are untouched
+
+RESULT: FAIL (1 check(s) failed)
+[exit 1]
+
+# solution.md
+$ truncate -s 0 /work/var/log/app/app.log
+
+[exit 0]
+
+# check PO solution.md (oczekiwane PASS)
+$ sh /practice/check.sh
+PASS  usage.txt lists the folders from the smallest to the biggest
+PASS  app.log is empty, still in place, and the program keeps writing to it
+PASS  all the other files are untouched
+
+RESULT: PASS — well done
+[exit 0]
+
+# start.sh (prawdziwe uruchomienie, wejście: sh /practice/check.sh; exit) — oczekiwane: kontener startuje, RESULT: FAIL
+FAIL  /work/usage.txt does not exist yet (or is empty)
+FAIL  app.log still uses 70M — empty it
+PASS  all the other files are untouched
+RESULT: FAIL (2 check(s) failed)
+[start.sh: OK]
+
+# WYNIK: OK (setup 0, przed 1, część 1, po 0; pliki: TASK.md, check.sh, setup.sh, solution.md, start.sh)

@@ -1,0 +1,76 @@
+# practice-test.log — 09-cron-nie-dziala: obraz docker.io/library/debian:13 + pakiety cron, 2026-11-25T20:53:16Z
+
+# setup
+$ sh /practice/setup.sh
+
+PRACTICE — lesson 09: a cron job that really works
+--------------------------------------------------
+/work/jobs/dump.sh makes a nightly database dump. It calls the
+tool dumptool from /work/bin and writes dump.sql into the folder
+it runs in. By hand it works:
+  cd /work/jobs && PATH=/work/bin:$PATH ./dump.sh
+Don't change dump.sh or dumptool. Write a crontab file
+/work/dump.cron and install it with crontab:
+
+1. Run dump.sh every day at 02:30 so that it works in cron's
+   environment (PATH is only /usr/bin:/bin, the job starts in
+   /root), dump.sql lands in /work/jobs, and BOTH the output and
+   the errors are appended to /work/logs/dump.log.
+2. Then change the log to one file per day, named with today's
+   date, like /work/logs/dump-2026-11-25.log ($(date +%F)).
+   Install the new version too.
+
+Check: sh /practice/check.sh     Answer: /practice/solution.md
+(check.sh runs your job the way cron would: same PATH, same
+folder, same handling of special characters.)
+[exit 0]
+
+# check PRZED rozwiązaniem (oczekiwane FAIL)
+$ sh /practice/check.sh
+PASS  dump.sh and dumptool are unchanged
+FAIL  /work/dump.cron does not exist yet
+
+RESULT: FAIL (1 check(s) failed)
+[exit 1]
+
+# solution.md
+$ printf '%s\n' 'PATH=/work/bin:/usr/bin:/bin' '30 2 * * * cd /work/jobs && ./dump.sh >> /work/logs/dump.log 2>&1' > /work/dump.cron && crontab /work/dump.cron
+
+[exit 0]
+
+# check po CZĘŚCI rozwiązania (oczekiwane FAIL)
+$ sh /practice/check.sh
+PASS  dump.sh and dumptool are unchanged
+PASS  dump.cron is installed (crontab -l shows the same lines)
+PASS  the job runs every day at 02:30
+PASS  in cron's environment the job finds dumptool and writes /work/jobs/dump.sql
+PASS  the output and the errors are appended to the log
+FAIL  the log still goes to dump.log — part 2: name it dump-$(date +\%F).log
+
+RESULT: FAIL (1 check(s) failed)
+[exit 1]
+
+# solution.md
+$ printf '%s\n' 'PATH=/work/bin:/usr/bin:/bin' '30 2 * * * cd /work/jobs && ./dump.sh >> /work/logs/dump-$(date +\%F).log 2>&1' > /work/dump.cron && crontab /work/dump.cron
+
+[exit 0]
+
+# check PO solution.md (oczekiwane PASS)
+$ sh /practice/check.sh
+PASS  dump.sh and dumptool are unchanged
+PASS  dump.cron is installed (crontab -l shows the same lines)
+PASS  the job runs every day at 02:30
+PASS  in cron's environment the job finds dumptool and writes /work/jobs/dump.sql
+PASS  the output and the errors are appended to the log
+PASS  the log file is named with today's date (dump-2026-11-25.log)
+
+RESULT: PASS — well done
+[exit 0]
+
+# start.sh (prawdziwe uruchomienie, wejście: sh /practice/check.sh; exit) — oczekiwane: kontener startuje, RESULT: FAIL
+PASS  dump.sh and dumptool are unchanged
+FAIL  /work/dump.cron does not exist yet
+RESULT: FAIL (1 check(s) failed)
+[start.sh: OK]
+
+# WYNIK: OK (setup 0, przed 1, część 1, po 0; pliki: TASK.md, check.sh, setup.sh, solution.md, start.sh)

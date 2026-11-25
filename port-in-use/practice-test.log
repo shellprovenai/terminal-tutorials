@@ -1,0 +1,70 @@
+# practice-test.log — 14-port-zajety: obraz docker.io/library/debian:13 + pakiety iproute2 lsof psmisc socat procps, 2026-11-25T20:55:10Z
+
+# setup
+$ sh /practice/setup.sh
+
+PRACTICE — lesson 14: free a busy port
+--------------------------------------
+Your new app must listen on TCP port 5000, but it fails with
+"Address already in use". Three servers are running in this
+container, on ports 3000, 5000 and 5432. The ones on 3000 and 5432
+are needed and must keep running.
+
+1. Find the process that listens on port 5000 and write only its
+   PID (just the number) to /work/pid.txt.
+2. Stop that process so port 5000 is free. It saves its data when
+   it gets the polite SIGTERM, so it must not be killed harder
+   than that.
+
+Check: sh /practice/check.sh     Answer: /practice/solution.md
+[exit 0]
+
+# check PRZED rozwiązaniem (oczekiwane FAIL)
+$ sh /practice/check.sh
+FAIL  /work/pid.txt does not exist yet
+FAIL  port 5000 is still in use
+PASS  the server on port 3000 is still running
+PASS  the server on port 5432 is still running
+
+RESULT: FAIL (2 check(s) failed)
+[exit 1]
+
+# solution.md
+$ lsof -t -i :5000 > /work/pid.txt
+
+[exit 0]
+
+# check po CZĘŚCI rozwiązania (oczekiwane FAIL)
+$ sh /practice/check.sh
+PASS  pid.txt has the PID of the process on port 5000
+FAIL  port 5000 is still in use
+PASS  the server on port 3000 is still running
+PASS  the server on port 5432 is still running
+
+RESULT: FAIL (1 check(s) failed)
+[exit 1]
+
+# solution.md
+$ kill $(cat /work/pid.txt); sleep 1
+
+[exit 0]
+
+# check PO solution.md (oczekiwane PASS)
+$ sh /practice/check.sh
+PASS  pid.txt has the PID of the process on port 5000
+PASS  port 5000 is free, the old server got SIGTERM (exit status 143)
+PASS  the server on port 3000 is still running
+PASS  the server on port 5432 is still running
+
+RESULT: PASS — well done
+[exit 0]
+
+# start.sh (prawdziwe uruchomienie, wejście: sh /practice/check.sh; exit) — oczekiwane: kontener startuje, RESULT: FAIL
+FAIL  /work/pid.txt does not exist yet
+FAIL  port 5000 is still in use
+PASS  the server on port 3000 is still running
+PASS  the server on port 5432 is still running
+RESULT: FAIL (2 check(s) failed)
+[start.sh: OK]
+
+# WYNIK: OK (setup 0, przed 1, część 1, po 0; pliki: TASK.md, check.sh, setup.sh, solution.md, start.sh)

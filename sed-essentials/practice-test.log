@@ -1,4 +1,4 @@
-# practice-test.log — 18-sed-podstawy: obraz docker.io/library/debian:13, 2026-11-25T20:14:51Z
+# practice-test.log — 18-sed-podstawy: obraz docker.io/library/debian:13, 2026-11-25T20:56:49Z
 
 # setup
 $ sh /practice/setup.sh
@@ -59,5 +59,13 @@ PASS  backup.txt has exactly the backup section, markers included
 
 RESULT: PASS — well done
 [exit 0]
+
+# start.sh (prawdziwe uruchomienie, wejście: sh /practice/check.sh; exit) — oczekiwane: kontener startuje, RESULT: FAIL
+FAIL  server.conf is not changed yet — without -i, sed only prints the result
+FAIL  /work/server.conf.bak does not exist — use -i.bak (no space) to keep the original
+PASS  cron.log is unchanged
+FAIL  /work/backup.txt does not exist yet
+RESULT: FAIL (3 check(s) failed)
+[start.sh: OK]
 
 # WYNIK: OK (setup 0, przed 1, część 1, po 0; pliki: TASK.md, check.sh, setup.sh, solution.md, start.sh)

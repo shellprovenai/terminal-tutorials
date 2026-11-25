@@ -1,6 +1,7 @@
 # What's eating your CPU? Find it with ps and top, and stop it safely (SIGTERM vs SIGKILL)
 
 > 🎬 Video: https://youtu.be/p-A9XZask4w (public from Nov 24, 2026)
+> 📝 Lesson page with a short quiz: https://shellprovenai.github.io/lekcje/ps-top-kill/
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 
@@ -117,6 +118,10 @@ $ (setsid busy >/dev/null 2>&1 &); sleep 1; ps -eo pid,%cpu,comm --sort=-%cpu | 
     PID %CPU COMMAND
     180  100 busy
 ```
+
+## Practice
+
+Try it yourself, without the video: `practice/start.sh` opens a throwaway container (podman or docker) with the task, `sh /practice/check.sh` tells you when you're done, `practice/solution.md` has the answer. Tested: `practice-test.log` (FAIL before, PASS after the solution).
 
 ## Files
 

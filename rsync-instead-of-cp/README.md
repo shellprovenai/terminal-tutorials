@@ -1,6 +1,7 @@
 # rsync instead of cp: copy only what changed, dry-run first, and the trailing-slash trap
 
 > 🎬 Video: https://youtu.be/3YrSm6wADKw (public from Nov 23, 2026)
+> 📝 Lesson page with a short quiz: https://shellprovenai.github.io/lekcje/rsync-instead-of-cp/
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 
@@ -156,6 +157,10 @@ cd+++++++++ cache/
 >f+++++++++ cache/thumbs.tmp
 photos
 ```
+
+## Practice
+
+Try it yourself, without the video: `practice/start.sh` opens a throwaway container (podman or docker) with the task, `sh /practice/check.sh` tells you when you're done, `practice/solution.md` has the answer. Tested: `practice-test.log` (FAIL before, PASS after the solution).
 
 ## Files
 

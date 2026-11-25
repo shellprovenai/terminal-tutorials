@@ -1,0 +1,66 @@
+# practice-test.log — 13-procesy-kill: obraz docker.io/library/debian:13 + pakiety procps, 2026-11-25T20:54:34Z
+
+# setup
+$ sh /practice/setup.sh
+
+PRACTICE — lesson 13: ps, top and kill
+--------------------------------------
+Three programs from /work/bin are running in the background.
+One of them is eating a whole CPU core.
+
+1. Find the process that uses the most CPU and write its name
+   (just the name, like sshd) to /work/culprit.txt. Then stop it.
+   thumbnail-cache is a different program: it must keep running.
+2. Stop the exporter so that it can finish properly: when it gets
+   the right signal it writes END to /work/export.csv and removes
+   /work/exporter.lock. A stale lock file means you did it wrong.
+
+Check: sh /practice/check.sh     Answer: /practice/solution.md
+Start over: sh /practice/setup.sh
+[exit 0]
+
+# check PRZED rozwiązaniem (oczekiwane FAIL)
+$ sh /practice/check.sh
+PASS  thumbnail-cache is still running
+FAIL  /work/culprit.txt does not exist yet — ps aux --sort=-%cpu shows the busiest process first
+FAIL  the exporter is still running
+
+RESULT: FAIL (2 check(s) failed)
+[exit 1]
+
+# solution.md
+$ ps -eo comm --sort=-time --no-headers | head -1 > /work/culprit.txt && pkill -x thumbnailer
+
+[exit 0]
+
+# check po CZĘŚCI rozwiązania (oczekiwane FAIL)
+$ sh /practice/check.sh
+PASS  thumbnail-cache is still running
+PASS  the culprit thumbnailer is named in culprit.txt and stopped
+FAIL  the exporter is still running
+
+RESULT: FAIL (1 check(s) failed)
+[exit 1]
+
+# solution.md
+$ pkill -x exporter
+
+[exit 0]
+
+# check PO solution.md (oczekiwane PASS)
+$ sh /practice/check.sh
+PASS  thumbnail-cache is still running
+PASS  the culprit thumbnailer is named in culprit.txt and stopped
+PASS  the exporter got SIGTERM, wrote END and removed its lock
+
+RESULT: PASS — well done
+[exit 0]
+
+# start.sh (prawdziwe uruchomienie, wejście: sh /practice/check.sh; exit) — oczekiwane: kontener startuje, RESULT: FAIL
+PASS  thumbnail-cache is still running
+FAIL  /work/culprit.txt does not exist yet — ps aux --sort=-%cpu shows the busiest process first
+FAIL  the exporter is still running
+RESULT: FAIL (2 check(s) failed)
+[start.sh: OK]
+
+# WYNIK: OK (setup 0, przed 1, część 1, po 0; pliki: TASK.md, check.sh, setup.sh, solution.md, start.sh)

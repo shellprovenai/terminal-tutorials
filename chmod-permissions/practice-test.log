@@ -1,4 +1,4 @@
-# practice-test.log — 04-uprawnienia-chmod: obraz docker.io/library/debian:13, 2026-11-25T20:18:45Z
+# practice-test.log — 04-uprawnienia-chmod: obraz docker.io/library/debian:13, 2026-11-25T20:51:49Z
 
 # setup
 $ sh /practice/setup.sh
@@ -61,5 +61,14 @@ PASS  private is 750: dave everything, devs can list and enter, mallory is out
 
 RESULT: PASS — well done
 [exit 0]
+
+# start.sh (prawdziwe uruchomienie, wejście: sh /practice/check.sh; exit) — oczekiwane: kontener startuje, RESULT: FAIL
+PASS  /work/app still has its 6 files, all owned by dave:devs
+FAIL  /work/writable.txt does not exist yet
+FAIL  something in /work/app is still writable by everyone (find /work/app -perm -o=w) — 777 is never the fix
+FAIL  mallory can still read db.env (mode 644) — a secret should be 600
+FAIL  mallory can still get into private (mode 755) — take everything away from others
+RESULT: FAIL (4 check(s) failed)
+[start.sh: OK]
 
 # WYNIK: OK (setup 0, przed 1, część 1, po 0; pliki: TASK.md, check.sh, setup.sh, solution.md, start.sh)

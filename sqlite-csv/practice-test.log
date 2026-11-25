@@ -1,4 +1,4 @@
-# practice-test.log — 05-sqlite-csv: obraz docker.io/library/debian:13 + pakiety sqlite3, 2026-11-25T20:19:18Z
+# practice-test.log — 05-sqlite-csv: obraz docker.io/library/debian:13 + pakiety sqlite3, 2026-11-25T20:52:11Z
 
 # setup
 $ sh /practice/setup.sh
@@ -54,5 +54,12 @@ PASS  top.csv has the right totals per city, biggest first, with the header
 
 RESULT: PASS — well done
 [exit 0]
+
+# start.sh (prawdziwe uruchomienie, wejście: sh /practice/check.sh; exit) — oczekiwane: kontener startuje, RESULT: FAIL
+PASS  orders.csv is unchanged
+FAIL  /work/shop.db does not exist yet
+FAIL  /work/top.csv does not exist yet
+RESULT: FAIL (2 check(s) failed)
+[start.sh: OK]
 
 # WYNIK: OK (setup 0, przed 1, część 1, po 0; pliki: TASK.md, check.sh, setup.sh, solution.md, start.sh)

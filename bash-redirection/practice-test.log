@@ -1,4 +1,4 @@
-# practice-test.log — 06-przekierowania: obraz docker.io/library/debian:13, 2026-11-25T20:19:41Z
+# practice-test.log — 06-przekierowania: obraz docker.io/library/debian:13, 2026-11-25T20:52:39Z
 
 # setup
 $ sh /practice/setup.sh
@@ -55,5 +55,12 @@ PASS  error-count.txt says 2
 
 RESULT: PASS — well done
 [exit 0]
+
+# start.sh (prawdziwe uruchomienie, wejście: sh /practice/check.sh; exit) — oczekiwane: kontener startuje, RESULT: FAIL
+PASS  nightly.sh is unchanged
+FAIL  nothing was added to nightly.log yet
+FAIL  /work/error-count.txt does not exist yet
+RESULT: FAIL (2 check(s) failed)
+[start.sh: OK]
 
 # WYNIK: OK (setup 0, przed 1, część 1, po 0; pliki: TASK.md, check.sh, setup.sh, solution.md, start.sh)
