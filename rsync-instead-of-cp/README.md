@@ -7,6 +7,8 @@ Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh`
 
 > Script and narration made with the help of AI. Every command below was executed; outputs are real.
 
+> **Correction (2:33):** in the video I say that a missing source slash combined with `--delete` can make rsync remove everything it doesn't recognise. That's wrong. `rsync -a --delete photos backup/` (no slash) only creates `backup/photos` and deletes nothing else. The dangerous case is the opposite: `rsync -a --delete photos/ backup/` (with the slash) deletes every file in `backup/` that isn't in `photos` — exactly what the Quick check shows. Always dry-run with `-n` first. Test: [`korekta-lab.log`](korekta-lab.log).
+
 ## The first copy: rsync -a
 
 ```console
@@ -167,5 +169,6 @@ Try it yourself, without the video: `practice/start.sh` opens a throwaway contai
 - `setup.sh` — demo folder
 - `rsync-instead-of-cp.tape` — VHS tape (terminal recording script)
 - `polecenia.log` — full test log with exit codes
+- `korekta-lab.log` — test behind the correction at the top of this page
 
 License: <do decyzji Sewa>

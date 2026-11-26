@@ -1,0 +1,78 @@
+# korekta-lab.log — rsync-instead-of-cp (video 12, correction 2:33), 2026-11-26T07:02:17Z, image localhost/shellproven-rsync-instead-of-cp:13 (rsync 3.5.0, Debian 13), fresh container
+# script:
+#   set -u
+#   cd /tmp && rm -rf lab && mkdir -p lab && cd lab
+#   mkdir -p photos/2026 && touch photos/notes.txt photos/2026/a.jpg
+#   mkdir -p backup && touch backup/keep-me.txt backup/other-project.txt
+#   run(){ echo "\$ $*"; bash -c "$*"; echo "[exit $?]"; echo; }
+#   echo "### A: source WITHOUT slash + --delete (what the film warns about)"
+#   run 'ls backup'
+#   run 'rsync -ain --delete photos backup/'
+#   run 'rsync -ai --delete photos backup/'
+#   run 'ls backup backup/photos'
+#   echo "### B: the real danger: slash added to the source, destination already holds other files"
+#   run 'rsync -ain --delete photos/ backup/'
+#   run 'rsync -ai --delete photos/ backup/'
+#   run 'ls backup'
+
+### A: source WITHOUT slash + --delete (what the film warns about)
+$ ls backup
+keep-me.txt
+other-project.txt
+[exit 0]
+
+$ rsync -ain --delete photos backup/
+cd+++++++++ photos/
+>f+++++++++ photos/notes.txt
+cd+++++++++ photos/2026/
+>f+++++++++ photos/2026/a.jpg
+[exit 0]
+
+$ rsync -ai --delete photos backup/
+cd+++++++++ photos/
+>f+++++++++ photos/notes.txt
+cd+++++++++ photos/2026/
+>f+++++++++ photos/2026/a.jpg
+[exit 0]
+
+$ ls backup backup/photos
+backup:
+keep-me.txt
+other-project.txt
+photos
+
+backup/photos:
+2026
+notes.txt
+[exit 0]
+
+### B: the real danger: slash added to the source, destination already holds other files
+$ rsync -ain --delete photos/ backup/
+*deleting   photos/2026/a.jpg
+*deleting   photos/2026/
+*deleting   photos/notes.txt
+*deleting   photos/
+*deleting   other-project.txt
+*deleting   keep-me.txt
+>f+++++++++ notes.txt
+cd+++++++++ 2026/
+>f+++++++++ 2026/a.jpg
+[exit 0]
+
+$ rsync -ai --delete photos/ backup/
+*deleting   photos/2026/a.jpg
+*deleting   photos/2026/
+*deleting   photos/notes.txt
+*deleting   photos/
+*deleting   other-project.txt
+*deleting   keep-me.txt
+>f+++++++++ notes.txt
+cd+++++++++ 2026/
+>f+++++++++ 2026/a.jpg
+[exit 0]
+
+$ ls backup
+2026
+notes.txt
+[exit 0]
+

@@ -7,6 +7,8 @@ Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh`
 
 > Script and narration made with the help of AI. Every command below was executed; outputs are real.
 
+> **Correction (3:24):** the video says that grepping ps for the port number won't find a port. In this demo `ps aux | grep 8080` does find socat, because 8080 is part of its command line. ps knows nothing about ports: grep only finds the number if it happens to be in a command line (a server that reads its port from a config file is invisible to it). `ss -ltnp` is the reliable way. Test: [`korekta-lab.log`](korekta-lab.log).
+
 ## The error
 
 ```console
@@ -82,7 +84,7 @@ exit status 143
 
 **Question 1.** Which command shows the process listening on port 8080?
 
-**Answer:** ss -ltnp 'sport = :8080' — ss -ltnp lists listening TCP sockets with their process. Grepping ps for the number won't find a port.
+**Answer:** ss -ltnp 'sport = :8080' — ss -ltnp lists listening TCP sockets with their process. ps knows nothing about ports: grep only finds the number if it happens to be in a command line.
 
 **Question 2.** Which signal does fuser -k send by default?
 
@@ -111,5 +113,6 @@ Try it yourself, without the video: `practice/start.sh` opens a throwaway contai
 - `setup.sh` — demo folder
 - `port-in-use.tape` — VHS tape (terminal recording script)
 - `polecenia.log` — full test log with exit codes
+- `korekta-lab.log` — test behind the correction at the top of this page
 
 License: <do decyzji Sewa>

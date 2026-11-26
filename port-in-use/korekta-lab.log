@@ -1,0 +1,39 @@
+# korekta-lab.log — port-in-use (film 14, correction 3:24), 2026-11-26T07:41:02Z, image localhost/shellproven-port-in-use:13 (Debian 13), fresh container
+# script:
+#   run(){ echo "\$ $*"; bash -c "$*" 2>&1; echo "[exit $?]"; echo; }
+#   echo "### A: the demo from the video: the port number is in the command line, so grep finds it by accident"
+#   run "(setsid socat TCP-LISTEN:8080,fork SYSTEM:'echo hello' >/dev/null 2>&1 &); sleep 1"
+#   run "ps aux | grep 8080 | grep -v grep"
+#   echo "### B: a server that reads its port from a config file: ps has no idea"
+#   run "echo 9002 > /tmp/app.port; cat > /tmp/app <<'X'
+#   #!/bin/sh
+#   exec perl -MIO::Socket::INET -e '\$p=<STDIN>; chomp \$p; \$s=IO::Socket::INET->new(LocalPort=>\$p,Listen=>5,ReuseAddr=>1) or die; sleep 300' < /tmp/app.port
+#   X
+#   chmod +x /tmp/app; (setsid /tmp/app >/dev/null 2>&1 &); sleep 1"
+#   run "ps aux | grep 9002 | grep -v grep"
+#   run "ss -ltnp 'sport = :9002'"
+
+### A: the demo from the video: the port number is in the command line, so grep finds it by accident
+$ (setsid socat TCP-LISTEN:8080,fork SYSTEM:'echo hello' >/dev/null 2>&1 &); sleep 1
+[exit 0]
+
+$ ps aux | grep 8080 | grep -v grep
+root           9  0.0  0.0  11728  4348 ?        Ss   07:40   0:00 socat TCP-LISTEN:8080,fork SYSTEM:echo hello
+[exit 0]
+
+### B: a server that reads its port from a config file: ps has no idea
+$ echo 9002 > /tmp/app.port; cat > /tmp/app <<'X'
+#!/bin/sh
+exec perl -MIO::Socket::INET -e '$p=<STDIN>; chomp $p; $s=IO::Socket::INET->new(LocalPort=>$p,Listen=>5,ReuseAddr=>1) or die; sleep 300' < /tmp/app.port
+X
+chmod +x /tmp/app; (setsid /tmp/app >/dev/null 2>&1 &); sleep 1
+[exit 0]
+
+$ ps aux | grep 9002 | grep -v grep
+[exit 1]
+
+$ ss -ltnp 'sport = :9002'
+State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess                      
+LISTEN 0      5            0.0.0.0:9002      0.0.0.0:*    users:(("perl",pid=18,fd=3))
+[exit 0]
+
