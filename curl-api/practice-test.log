@@ -1,0 +1,72 @@
+# practice-test.log — 20-curl-api: obraz docker.io/library/debian:13 + pakiety curl python3, 2026-11-26T07:54:08Z
+
+# setup
+$ sh /practice/setup.sh
+
+PRACTICE — lesson 20: curl for APIs
+-----------------------------------
+A small helpdesk API runs in this container on http://localhost:8080
+(test server, nothing leaves the container). The API key is in
+/work/api-key.txt; the API wants it in the header X-API-Key.
+
+1. Create a ticket with the title "disk full on web1": POST the JSON
+   {"title":"disk full on web1"} to http://localhost:8080/tickets.
+   Read the key from the file, don't type it into the command.
+   You should get status 201. Plain -d is not enough here!
+   (GET /tickets with the same header lists the tickets.)
+2. /work/backup-check.sh says "backup OK", but there is no backup of
+   db1 at all: the server answers 404. Fix the script so that on an
+   error answer it does NOT print "backup OK" and exits with a non-zero
+   code. For a real backup (try BACKUP_URL=http://localhost:8080/backups/web1
+   sh /work/backup-check.sh) it must still print "backup OK".
+
+Check: sh /practice/check.sh     Answer: /practice/solution.md
+Start over: sh /practice/setup.sh
+[exit 0]
+
+# check PRZED rozwiązaniem (oczekiwane FAIL)
+$ sh /practice/check.sh
+FAIL  no ticket yet — POST the JSON to http://localhost:8080/tickets
+FAIL  backup-check.sh still says "backup OK" on a 404 — curl exits with 0 on error answers; use -f or check %{http_code}
+PASS  backup-check.sh still says "backup OK" for a real backup (web1)
+
+RESULT: FAIL (2 check(s) failed)
+[exit 1]
+
+# solution.md
+$ curl -s -w ' -> %{http_code}\n' -H "X-API-Key: $(cat /work/api-key.txt)" --json '{"title":"disk full on web1"}' http://localhost:8080/tickets
+{"id": 101, "title": "disk full on web1", "status": "open"}
+ -> 201
+[exit 0]
+
+# check po CZĘŚCI rozwiązania (oczekiwane FAIL)
+$ sh /practice/check.sh
+PASS  the ticket "disk full on web1" was created
+FAIL  backup-check.sh still says "backup OK" on a 404 — curl exits with 0 on error answers; use -f or check %{http_code}
+PASS  backup-check.sh still says "backup OK" for a real backup (web1)
+
+RESULT: FAIL (1 check(s) failed)
+[exit 1]
+
+# solution.md
+$ sed -i 's/curl -s /curl -sf /' /work/backup-check.sh
+
+[exit 0]
+
+# check PO solution.md (oczekiwane PASS)
+$ sh /practice/check.sh
+PASS  the ticket "disk full on web1" was created
+PASS  backup-check.sh fails (exit 22) when the server answers 404
+PASS  backup-check.sh still says "backup OK" for a real backup (web1)
+
+RESULT: PASS — well done
+[exit 0]
+
+# start.sh (prawdziwe uruchomienie, wejście: sh /practice/check.sh; exit) — oczekiwane: kontener startuje, RESULT: FAIL
+FAIL  no ticket yet — POST the JSON to http://localhost:8080/tickets
+FAIL  backup-check.sh still says "backup OK" on a 404 — curl exits with 0 on error answers; use -f or check %{http_code}
+PASS  backup-check.sh still says "backup OK" for a real backup (web1)
+RESULT: FAIL (2 check(s) failed)
+[start.sh: OK]
+
+# WYNIK: OK (setup 0, przed 1, część 1, po 0; pliki: TASK.md, check.sh, setup.sh, solution.md, start.sh)

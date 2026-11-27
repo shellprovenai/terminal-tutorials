@@ -1,6 +1,7 @@
 # curl for APIs: headers, JSON bodies, timings, cookies, and the status code trap in scripts
 
 > 🎬 Video: https://youtu.be/fttnDWjk6cY (public from Nov 27, 2026)
+> 📝 Lesson page with a short quiz: https://shellprovenai.github.io/lekcje/curl-api/
 
 Commands from the video, tested in `docker.io/library/debian:13`. Run `setup.sh` first to recreate the demo folder.
 
@@ -129,6 +130,10 @@ $ curl -s -w ' -> %{http_code}\n' --json '{"name":"x"}' http://localhost:8000/ap
 {"id": 5, "name": "x"}
  -> 201
 ```
+
+## Practice
+
+Try it yourself, without the video: `practice/start.sh` opens a throwaway container (podman or docker) with the task, `sh /practice/check.sh` tells you when you're done, `practice/solution.md` has the answer. Tested: `practice-test.log` (FAIL before, PASS after the solution).
 
 ## Files
 
